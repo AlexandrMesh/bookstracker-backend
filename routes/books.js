@@ -1,26 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-
-const Schema = mongoose.Schema;
-const bookSchema = new Schema({
-  title: String,
-  categoryId: Number,
-  coverPath: String,
-  authorsList: [String],
-  annotation: String,
-  isbn: String,
-  pages: String,
-  publisher: String,
-  year: Number,
-  votesCount: Number,
-  rating: Number
-});
-const Book = mongoose.model('Book', bookSchema);
+const Book = mongoose.model('Book');
 
 /* GET users listing. */
-router.get('/', bodyParser.json(), async (req, res, next) => {
+router.get('/', async (req, res, next) => {
   
 
   // limit = 50
