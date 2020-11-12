@@ -1,18 +1,18 @@
 require('dotenv').config();
-require('./db/mongo.js');
-require('./models/User');
-require('./models/Book');
+require('./src/db/mongo.js');
+require('./src/models/User');
+require('./src/models/Book');
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const requireAuth = require('./middlewares/requireAuth');
+const requireAuth = require('./src/middlewares/requireAuth');
 
 // routes
-const auth = require('./routes/auth');
-const index = require('./routes/index');
-const books = require('./routes/books');
+const auth = require('./src/routes/auth');
+const index = require('./src/routes/index');
+const books = require('./src/routes/books');
 
 const app = express();
 
