@@ -25,7 +25,7 @@ router.post('/checkAuth', async (req, res) => {
   });
 });
 
-router.post('/signup', async (req, res) => {
+router.post('/signUp', async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -39,7 +39,7 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-router.post('/signin', async (req, res) => {
+router.post('/signIn', async (req, res) => {
   const { email, password, googleToken } = req.body;
 
   if (googleToken) {
