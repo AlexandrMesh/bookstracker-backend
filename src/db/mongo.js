@@ -5,6 +5,7 @@ const DB = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD
 );
 
+mongoose.set('useFindAndModify', false);
 mongoose.connect(DB, {useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true, serverSelectionTimeoutMS: 5000});
 const connection = mongoose.connection;
 connection.on('error', console.error.bind(console, 'connection error:'));

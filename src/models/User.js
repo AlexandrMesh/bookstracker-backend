@@ -10,6 +10,12 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
+  },
+  resetPassword: {
+    hashCode: String,
+    expire_timestamp: Number,
+    created_timestamp: Number,
+    verified: Boolean
   }
 });
 
