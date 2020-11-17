@@ -132,7 +132,7 @@ router.post('/resetPassword', async (req, res) => {
   try {
     const user = await User.findOneAndUpdate({ email }, { resetPassword })
     if (!user) {
-      return res.status(401).send({ error: 'Invalid email' });
+      return res.status(401).send({ error: 'User with this email is not exist' });
     }
     await sendEmail({ email, code })
     return res.send({ isSent: true });
