@@ -26,10 +26,13 @@ router.get('/', async (req, res, next) => {
   // page * limit - limit -- if start page is 1
   // page * limit -- if start page is 0
   const limit = 5;
-  const page = req.body.page
+  const page = req.query.page || 0;
   const skip = page * limit;
+  const title = req.query.title;
+  const condition = title ? {$or: [ {title: { $regex: title, $options: 'i' } } ]} : {};
   
-  const books = await Book.find({ $or: [ {title: /Двенадцать/i }, { year: 2001 } ] }, null, { skip, limit }).sort({ rating: -1 });
+  const books = await Book.find(condition, null, { skip, limit }).select(['title', 'categoryId', 'coverPath', 'rating']).sort({ title: 1 });
+
   res.send(books);
 });
 

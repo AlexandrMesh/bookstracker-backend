@@ -11,7 +11,7 @@ router.post('/signIn', signIn);
 
 router.post('/resetPassword', resetPassword);
 
-router.get('/verifyResetPasswordCode', verifyResetPasswordCode);
+router.post('/verifyResetPasswordCode', verifyResetPasswordCode);
 
 router.post('/setNewPassword', setNewPassword);
 

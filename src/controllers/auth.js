@@ -9,8 +9,7 @@ const { isValidEmail } = require('../utils/isValidEmail');
 const User = mongoose.model('User');
 
 const checkAuth = async (req, res) => {
-  const { token } = req.body;
-
+  const { token } = req.query;
   if (!token) {
     return res.status(500).send('Must provide token');
   }
