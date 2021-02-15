@@ -13,6 +13,7 @@ const requireAuth = require('./src/middlewares/requireAuth');
 const auth = require('./src/routes/auth');
 const index = require('./src/routes/index');
 const books = require('./src/routes/books');
+const data = require('./src/routes/data');
 
 const app = express();
 
@@ -23,8 +24,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(auth);
+app.use(data);
 app.use('/', index);
-app.use('/books', requireAuth, books);
+app.use('/books', books);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

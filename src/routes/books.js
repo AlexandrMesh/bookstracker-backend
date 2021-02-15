@@ -29,8 +29,11 @@ router.get('/', async (req, res, next) => {
   const page = req.query.page || 0;
   const skip = page * limit;
   const title = req.query.title;
-  const condition = title ? {$or: [ {title: { $regex: title, $options: 'i' } } ]} : {};
-  
+  const bookIds = req.body.ids;
+  const loadQuery = bookIds ? { _id: { $in: bookIds } } : {};
+
+  const condition = title ? {$or: [ {title: { $regex: title, $options: 'i' } } ]} : loadQuery;
+
   const books = await Book.find(condition, null, { skip, limit }).select(['title', 'categoryId', 'coverPath', 'rating']).sort({ title: 1 });
 
   res.send(books);

@@ -16,7 +16,8 @@ const userSchema = new mongoose.Schema({
     expire_timestamp: Number,
     created_timestamp: Number,
     verified: Boolean
-  }
+  },
+  toReadBookIds: [String]
 });
 
 userSchema.pre('save', function(next) {
