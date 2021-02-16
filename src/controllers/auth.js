@@ -22,8 +22,8 @@ const checkAuth = async (req, res) => {
     const { userId } = payload;
 
     try {
-      const { _id, email } = await User.findById(userId);
-      res.send({ profile: { _id, email } });
+      const { _id, email, plannedBookIds } = await User.findById(userId);
+      res.send({ profile: { _id, email, plannedBookIds } });
     } catch (err) {
       return res.status(500).send('Something went wrong');
     }

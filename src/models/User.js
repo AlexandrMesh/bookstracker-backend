@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
     created_timestamp: Number,
     verified: Boolean
   },
-  toReadBookIds: [String]
+  plannedBookIds: [String]
 });
 
 userSchema.pre('save', function(next) {

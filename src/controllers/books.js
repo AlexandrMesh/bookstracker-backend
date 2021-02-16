@@ -41,8 +41,8 @@ const addBookToList = async (req, res) => {
   }
 
   try {
-    const { toReadBookIds } = await User.findOneAndUpdate({ _id: userId }, { $addToSet: { toReadBookIds: bookId } });
-    res.send(!toReadBookIds.includes(bookId));
+    const { plannedBookIds } = await User.findOneAndUpdate({ _id: userId }, { $addToSet: { plannedBookIds: bookId } });
+    res.send(!plannedBookIds.includes(bookId));
   } catch (err) {
     return res.status(500).send('Something went wrong');
   }

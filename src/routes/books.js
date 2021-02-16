@@ -2,9 +2,15 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Book = mongoose.model('Book');
+const User = mongoose.model('User');
+
+const getQuery = async (userId, bookListType) => {
+  const user = userId ? await User.findById(userId) : {};
+  return user[bookListType] ? { _id: { $in: user[bookListType] } } : {};
+};
 
 /* GET users listing. */
-router.get('/', async (req, res, next) => {
+router.get('/', async (req, res) => {
   
 
   // limit = 50
@@ -29,10 +35,10 @@ router.get('/', async (req, res, next) => {
   const page = req.query.page || 0;
   const skip = page * limit;
   const title = req.query.title;
-  const bookIds = req.body.ids;
-  const loadQuery = bookIds ? { _id: { $in: bookIds } } : {};
+  const userId = req.query.userId;
+  const bookListType = req.query.bookListType;
 
-  const condition = title ? {$or: [ {title: { $regex: title, $options: 'i' } } ]} : loadQuery;
+  const condition = title ? {$or: [ {title: { $regex: title, $options: 'i' } } ]} : await getQuery(userId, bookListType);
 
   const books = await Book.find(condition, null, { skip, limit }).select(['title', 'categoryId', 'coverPath', 'rating']).sort({ title: 1 });
 
