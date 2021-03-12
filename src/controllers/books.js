@@ -32,6 +32,7 @@ const getBooksList = async (req, res) => {
 
 const addBookToList = async (req, res) => {
   const { bookId, userId } = req.body;
+  
   if (!userId) {
     return res.status(500).send('Must provide user id');
   }
@@ -40,9 +41,18 @@ const addBookToList = async (req, res) => {
     return res.status(500).send('Must provide book id');
   }
 
+  const currentDate = new Date();
+  const timestamp = currentDate.getTime();
+
+  const book = { id: bookId, createdDate: timestamp }; 
+
   try {
-    const { plannedBookIds } = await User.findOneAndUpdate({ _id: userId }, { $addToSet: { plannedBookIds: bookId } });
-    res.send(!plannedBookIds.includes(bookId));
+    const { customPlannedBooks } = await User.findOneAndUpdate(
+      { _id: userId },
+      { $addToSet: { customPlannedBooks: book } },
+      { new: true }
+    );
+    res.send(customPlannedBooks);
   } catch (err) {
     return res.status(500).send('Something went wrong');
   }
