@@ -4,10 +4,18 @@ const mongoose = require('mongoose');
 const Book = mongoose.model('Book');
 const User = mongoose.model('User');
 
-const getBookIdsQuery = async (userId, bookListType, bookCategoryIds) => {
+const getQuery = async (userId, bookListType, bookCategoryIds = [], title) => {
+  const search = title ? {$or: [ {title: { $regex: title, $options: 'i' } } ]}: {};
   const user = userId ? await User.findById(userId) : {};
   const bookIds = (user[bookListType] || []).map((book) => book.id);
-  return user[bookListType] ? { _id: { $in: bookIds } } : { categoryId: { $in: bookCategoryIds } };
+  if (user[bookListType]) {
+    return { _id: { $in: bookIds } };
+  } else {
+    if (bookCategoryIds.length > 0) {
+      return {...search, categoryId: { $in: bookCategoryIds } };
+    }
+    return {...search};
+  }
 };
 
 /* GET users listing. */
@@ -38,11 +46,12 @@ router.get('/', async (req, res) => {
   const title = req.query.title;
   const userId = req.query.userId;
   const bookListType = req.query.bookListType;
-  const bookCategoryIds = req.query.bookCategoryIds.length && req.query.bookCategoryIds.split(',');
+  const bookCategoryIds = req.query.bookCategoryIds && req.query.bookCategoryIds.length && req.query.bookCategoryIds.split(',');
+  const { sortBy, sortDirection } = req.query.sortParams || { sortBy: 'title', sortDirection: 1 }; 
 
-  const condition = title ? {$or: [ {title: { $regex: title, $options: 'i' } } ]} : await getBookIdsQuery(userId, bookListType, bookCategoryIds);
+  const condition = await getQuery(userId, bookListType, bookCategoryIds, title);
 
-  const books = await Book.find(condition, null, { skip, limit }).select(['title', 'categoryId', 'coverPath', 'rating']).sort({ title: 1 });
+  const books = await Book.find(condition, null, { skip, limit }).select(['title', 'categoryId', 'coverPath', 'rating']).sort({ [sortBy]: sortDirection });
 
   res.send(books);
 });
