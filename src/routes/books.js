@@ -47,7 +47,8 @@ router.get('/', async (req, res) => {
   const userId = req.query.userId;
   const bookListType = req.query.bookListType;
   const bookCategoryIds = req.query.bookCategoryIds && req.query.bookCategoryIds.length && req.query.bookCategoryIds.split(',');
-  const { sortBy, sortDirection } = req.query.sortParams || { sortBy: 'title', sortDirection: 1 }; 
+  const sortBy = req.query.sortBy || 'title';
+  const sortDirection = req.query.sortDirection || 1;
 
   const condition = await getQuery(userId, bookListType, bookCategoryIds, title);
 

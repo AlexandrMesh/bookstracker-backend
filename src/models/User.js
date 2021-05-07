@@ -17,7 +17,9 @@ const userSchema = new mongoose.Schema({
     created_timestamp: Number,
     verified: Boolean
   },
-  customPlannedBooks: [{ id: String, createdDate: Number }]
+  customPlannedBooks: [{ id: String, createdDate: Number }],
+  customInProgressBooks: [{ id: String, createdDate: Number }],
+  customCompletedBooks: [{ id: String, createdDate: Number }]
 });
 
 userSchema.pre('save', function(next) {
