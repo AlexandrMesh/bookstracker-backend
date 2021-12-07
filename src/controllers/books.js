@@ -23,7 +23,7 @@ const getBook = async (req, res) => {
   }
 
   try {
-    const book = await Book.findById(id).select(['title', 'categoryId']);
+    const book = await Book.findById(id);
     res.send(book);
   } catch (err) {
     return res.status(500).send('Something went wrong');
