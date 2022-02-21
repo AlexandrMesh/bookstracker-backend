@@ -1,31 +1,31 @@
 const mongoose = require('mongoose');
 const Book = mongoose.model('Book');
 const User = mongoose.model('User');
-
-const getUserBooks = async (req, res) => {
-  const { userId } = req.query;
-  if (!userId) {
-    return res.status(500).send('Must provide id');
-  }
-
-  try {
-    const data = await User.findById(userId).select(['customPlannedBooks', 'customInProgressBooks', 'customCompletedBooks']);
-    res.send(data);
-  } catch (err) {
-    return res.status(500).send('Something went wrong');
-  }
-};
+const UserBook = mongoose.model('UserBook');
 
 const getBook = async (req, res) => {
-  const { id } = req.query;
-  if (!id) {
+  const { userId, bookId } = req.query;
+
+  if (!bookId) {
     return res.status(500).send('Must provide id');
   }
 
   try {
-    const book = await Book.findById(id);
-    res.send(book);
+    const user = userId ? await User.findById(userId).lean() : {};
+    const usersBookList = user.usersBookList;
+    const book = await Book.findById(bookId).lean();
+    const isPlanned = (usersBookList.planned || []).some((plannedBook) => book._id.toString() === plannedBook.id) && 'planned';
+    const isInProgress = (usersBookList.inProgress || []).some((inProgressBook) => book._id.toString() === inProgressBook.id) && 'inProgress';
+    const isCompleted = (usersBookList.completed || []).some((completedBook) => book._id.toString() === completedBook.id) && 'completed';
+    const status = isPlanned || isInProgress || isCompleted;
+    if (status) {
+      const { added } = (usersBookList[status] || []).find((usersBook) => book._id.toString() === usersBook.id) || {};
+      res.send({ ...book, status, added });
+    } else {
+      res.send(book);
+    }
   } catch (err) {
+    console.log(err, 'err');
     return res.status(500).send('Something went wrong');
   }
 };
@@ -46,37 +46,36 @@ const getBooksList = async (req, res) => {
 
 const removeUserBook = async (bookId, userId) => {
   try {
-    const { customPlannedBooks, customInProgressBooks, customCompletedBooks } = await User.findOneAndUpdate(
+    await User.updateOne(
       { _id: userId },
-      { $pull: { customPlannedBooks: { id: bookId }, customInProgressBooks: { id: bookId }, customCompletedBooks: { id: bookId } } },
-      { new: true }
+      { $pull: { 'usersBookList.planned': { id: bookId }, 'usersBookList.inProgress': { id: bookId }, 'usersBookList.completed': { id: bookId } } }
     );
-    return { customPlannedBooks, customInProgressBooks, customCompletedBooks};
+    return { bookId };
   } catch (err) {
+    console.log(err, 'removeUserBook err');
     console.log('Something went wrong');
   }
 }
 
-const addBookToList = async (bookId, userId, bookType) => {
-  const currentDate = new Date();
-  const timestamp = currentDate.getTime();
-
-  const book = { id: bookId, createdDate: timestamp };
-
+const addBookToList = async (bookId, userId, bookStatus) => {
   try {
-    const { customPlannedBooks, customInProgressBooks, customCompletedBooks } = await User.findOneAndUpdate(
+    const currentDate = new Date();
+    const timestamp = currentDate.getTime();
+    const book = await Book.findById(bookId).select(['title', 'categoryId', 'coverPath', 'rating']).lean();
+    const usersBook = { ...book, id: bookId, status: bookStatus, added: timestamp };
+    const usersBookList = `usersBookList.${bookStatus}`;
+    await User.updateOne(
       { _id: userId },
-      { $addToSet: { [bookType]: book } },
-      { new: true }
+      { $addToSet: { [usersBookList]: usersBook } }
     );
-    return { customPlannedBooks, customInProgressBooks, customCompletedBooks};
+    return usersBook;
   } catch (err) {
     console.log('Something went wrong');
   }
 };
 
 const updateUserBook = async (req, res) => {
-  const { bookId, userId, bookType } = req.body;
+  const { bookId, userId, bookStatus } = req.body;
   
   if (!userId) {
     return res.status(500).send('Must provide user id');
@@ -87,12 +86,28 @@ const updateUserBook = async (req, res) => {
   }
 
   try {
-    const books = await removeUserBook(bookId, userId);
-    const data = bookType ? await addBookToList(bookId, userId, bookType) : books;
-    res.send(data);
+    const response = {};
+    if (bookStatus === 'all') {
+      await UserBook.remove({ bookId, userId });
+    } else {
+      const currentDate = new Date();
+      const timestamp = currentDate.getTime();
+      const data = await UserBook.findOneAndUpdate(
+        { userId, bookId },
+        { bookStatus, added: timestamp },
+        { upsert: true, new: true }
+      );
+      response.bookStatus = data.bookStatus;
+      response.added = data.added;
+    }
+
+    // const books = await removeUserBook(bookId, userId);
+    // const data = bookStatus ? await addBookToList(bookId, userId, bookStatus) : books;
+    res.send(response);
   } catch (err) {
+    console.log(err, 'updateUserBook err');
     return res.status(500).send('Something went wrong');
   }
 };
 
-module.exports = { getBook, getBooksList, updateUserBook, getUserBooks };
+module.exports = { getBook, getBooksList, updateUserBook };

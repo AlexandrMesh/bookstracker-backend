@@ -2,6 +2,7 @@ require('dotenv').config();
 require('./src/db/mongo.js');
 require('./src/models/User');
 require('./src/models/Book');
+require('./src/models/UserBook');
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');

@@ -11,7 +11,10 @@ const bookSchema = new mongoose.Schema({
   publisher: String,
   year: Number,
   votesCount: Number,
-  rating: Number
+  rating: Number,
+  added: Number,
+  status: String,
+  bookDetails: {}
 });
 
 mongoose.model('Book', bookSchema);

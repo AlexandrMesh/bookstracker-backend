@@ -22,8 +22,8 @@ const checkAuth = async (req, res) => {
     const { userId } = payload;
 
     try {
-      const { _id, email, customPlannedBooks, customInProgressBooks, customCompletedBooks } = await User.findById(userId);
-      res.send({ profile: { _id, email, customPlannedBooks, customInProgressBooks, customCompletedBooks } });
+      const { _id, email, registered, updated } = await User.findById(userId);
+      res.send({ profile: { _id, email, registered, updated } });
     } catch (err) {
       return res.status(500).send('Something went wrong');
     }
@@ -52,11 +52,15 @@ const signUp = async (req, res) => {
       return res.status(500).send('Email is already taken');
     }
 
-    const user = new User({ email, password });
+    const currentDate = new Date();
+    const registered = currentDate.getTime();
+
+    const user = new User({ email, password, registered });
     await user.save();
 
+    const profile = { _id: user._id, email: user.email }
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
-    res.send({ token });
+    res.send({ token, profile });
   } catch (err) {
     return res.status(500).send('Something went wrong');
   }
@@ -80,10 +84,12 @@ const signIn = async (req, res) => {
         const newUser = new User({ email, password: googleToken });
         await newUser.save();
         userId = newUser._id;
-        profile = { _id: newUser._id, email: newUser.email }
+        const currentDate = new Date();
+        const registered = currentDate.getTime();
+        profile = { _id: newUser._id, email: newUser.email, registered }
       } else {
         userId = user._id;
-        profile = { _id: user._id, email: user.email }
+        profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated }
       }
       const token = jwt.sign({ userId }, process.env.SECRET_KEY);
       return res.send({ token, profile });
@@ -111,7 +117,7 @@ const signIn = async (req, res) => {
     }
     await user.comparePassword(password);
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
-    profile = { _id: user._id, email: user.email }
+    profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated }
     return res.send({ token, profile });
   } catch (err) {
     return res.status(401).send('Something went wrong');
