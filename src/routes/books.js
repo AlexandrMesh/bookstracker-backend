@@ -45,12 +45,12 @@ router.get('/', async (req, res) => {
   const limit = 5;
   const page = req.query.page || 0;
   const skip = page * limit;
-  const title = req.query.title;
+  const title = (req.query.title || '').toString();
   const userId = req.query.userId;
   const bookListStatus = req.query.bookListStatus;
-  const categoryIds = req.query.categoryIds && req.query.categoryIds.length && req.query.categoryIds;
+  const categoryIds = req.query.categoryIds && req.query.categoryIds.length && req.query.categoryIds.map(item => Number(item));
   const sortType = req.query.sortType || 'title';
-  const sortDirection = req.query.sortDirection || 1;
+  const sortDirection = Number(req.query.sortDirection) || 1;
 
   const itemsCount = skip + limit;
 
@@ -61,7 +61,9 @@ router.get('/', async (req, res) => {
 
   let result;
 
-  console.log(skip, 'skip');
+  console.log(categoryIds, 'categoryIds');
+  console.log(title, 'title');
+  console.log(bookListStatus, 'bookListStatus');
 
   if (bookListStatus !== 'all') {
     result = await UserBook.aggregate([
@@ -111,7 +113,7 @@ router.get('/', async (req, res) => {
                 }],
               as: 'bookDetails' }
             },
-            { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: [categoryIds] } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+            { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
             { $project: { bookDetails: { bookId: 1, added: 1, bookStatus: 1}, title: 1, categoryId: 1, coverPath: 1, rating: 1 } },
             { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
             { $project: { bookDetails: 0 } },
@@ -120,7 +122,7 @@ router.get('/', async (req, res) => {
             { $limit : limit }
           ],
           pagination: [
-            { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: [categoryIds] } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+            { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
             { $count: "totalItems" },
             {
               $project: {
