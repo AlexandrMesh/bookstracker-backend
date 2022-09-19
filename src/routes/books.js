@@ -74,7 +74,7 @@ router.get('/', async (req, res) => {
           { $project: { bookDetails: { title: 1, categoryId: 1, coverPath: 1, rating: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0 } },
-          { $sort : { [sortType]: sortDirection } },
+          { $sort : { added : -1 } },
           { $skip : skip },
           { $limit : limit }
         ],

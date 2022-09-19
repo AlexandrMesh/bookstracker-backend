@@ -11,18 +11,13 @@ const getBook = async (req, res) => {
   }
 
   try {
-    const user = userId ? await User.findById(userId).lean() : {};
-    const usersBookList = user.usersBookList;
-    const book = await Book.findById(bookId).lean();
-    const isPlanned = (usersBookList.planned || []).some((plannedBook) => book._id.toString() === plannedBook.id) && 'planned';
-    const isInProgress = (usersBookList.inProgress || []).some((inProgressBook) => book._id.toString() === inProgressBook.id) && 'inProgress';
-    const isCompleted = (usersBookList.completed || []).some((completedBook) => book._id.toString() === completedBook.id) && 'completed';
-    const status = isPlanned || isInProgress || isCompleted;
-    if (status) {
-      const { added } = (usersBookList[status] || []).find((usersBook) => book._id.toString() === usersBook.id) || {};
-      res.send({ ...book, status, added });
+    const bookDetails = await Book.findById(bookId).lean();
+    const book = await UserBook.findOne({ userId, bookId }) || {};
+    console.log(bookDetails, 'bookDetails');
+    if (book.bookStatus) {
+      res.send({ ...bookDetails, status: book.bookStatus, added: book.added });
     } else {
-      res.send(book);
+      res.send(bookDetails);
     }
   } catch (err) {
     console.log(err, 'err');
