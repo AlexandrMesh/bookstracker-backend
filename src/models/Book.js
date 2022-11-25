@@ -13,7 +13,7 @@ const bookSchema = new mongoose.Schema({
   votesCount: Number,
   rating: Number,
   added: Number,
-  status: String,
+  bookStatus: String,
   bookDetails: {}
 });
 

@@ -15,7 +15,7 @@ const getBook = async (req, res) => {
     const book = await UserBook.findOne({ userId, bookId }) || {};
     console.log(bookDetails, 'bookDetails');
     if (book.bookStatus) {
-      res.send({ ...bookDetails, status: book.bookStatus, added: book.added });
+      res.send({ ...bookDetails, bookStatus: book.bookStatus, added: book.added });
     } else {
       res.send(bookDetails);
     }
