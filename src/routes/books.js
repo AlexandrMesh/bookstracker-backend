@@ -69,17 +69,21 @@ router.get('/', async (req, res) => {
     result = await UserBook.aggregate([
       { $facet: {
         items: [
-          { $sort : { added : -1 } },
+          // { $sort : { added : -1 } },
+          
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
           { $match : { userId: mongoose.Types.ObjectId(userId), bookStatus: bookListStatus } },
           { $project: { bookDetails: { title: 1, categoryId: 1, coverPath: 1, rating: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0 } },
+          { $sort : { [sortType]: sortDirection } },
+          { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
           { $skip : skip },
           { $limit : limit }
         ],
         pagination: [
-          { $match : { userId: mongoose.Types.ObjectId(userId), bookStatus: bookListStatus } },
+          { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
+          { $match : { $and: [{ userId: mongoose.Types.ObjectId(userId) }, { bookStatus: bookListStatus }, (categoryIds || []).length > 0 ? { 'bookDetails.categoryId': { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
           { $count: "totalItems" },
           {
             $project: {
