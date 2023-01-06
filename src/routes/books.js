@@ -5,21 +5,6 @@ const Book = mongoose.model('Book');
 const User = mongoose.model('User');
 const UserBook = mongoose.model('UserBook');
 
-const getQuery = async (userId, bookListStatus, categoryIds = [], title) => {
-  const search = title ? {$or: [ {title: { $regex: title, $options: 'i' } } ]}: {};
-  const user = userId ? await User.findById(userId) : {};
-  const bookIds = ((user.usersBookList || {})[bookListStatus] || []).map((book) => book.id);
-  console.log(categoryIds, 'categoryIds');
-  if ((user.usersBookList || {})[bookListStatus]) {
-    return { _id: { $in: bookIds } };
-  } else {
-    if (categoryIds.length > 0) {
-      return {...search, categoryId: { $in: categoryIds } };
-    }
-    return {...search};
-  }
-};
-
 /* GET users listing. */
 router.get('/', async (req, res) => {
   
@@ -47,7 +32,7 @@ router.get('/', async (req, res) => {
   const skip = page * limit;
   const title = (req.query.title || '').toString();
   const userId = req.query.userId;
-  const bookListStatus = req.query.bookListStatus;
+  const boardType = req.query.boardType;
   const categoryIds = req.query.categoryIds && req.query.categoryIds.length && req.query.categoryIds.map(item => Number(item));
   const sortType = req.query.sortType || 'title';
   const sortDirection = Number(req.query.sortDirection) || 1;
@@ -63,27 +48,27 @@ router.get('/', async (req, res) => {
 
   console.log(categoryIds, 'categoryIds');
   console.log(title, 'title');
-  console.log(bookListStatus, 'bookListStatus');
+  console.log(boardType, 'boardType');
 
-  if (bookListStatus !== 'all') {
+  if (boardType !== 'all') {
     result = await UserBook.aggregate([
       { $facet: {
         items: [
           // { $sort : { added : -1 } },
           
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
-          { $match : { userId: mongoose.Types.ObjectId(userId), bookStatus: bookListStatus } },
+          { $match : { userId: mongoose.Types.ObjectId(userId), bookStatus: boardType } },
           { $project: { bookDetails: { title: 1, categoryId: 1, coverPath: 1, rating: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0 } },
-          { $sort : { [sortType]: sortDirection } },
           { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+          { $sort : { [sortType]: sortDirection, ...(sortType !== 'title' && { title: sortDirection }) } },
           { $skip : skip },
           { $limit : limit }
         ],
         pagination: [
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
-          { $match : { $and: [{ userId: mongoose.Types.ObjectId(userId) }, { bookStatus: bookListStatus }, (categoryIds || []).length > 0 ? { 'bookDetails.categoryId': { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+          { $match : { $and: [{ userId: mongoose.Types.ObjectId(userId) }, { bookStatus: boardType }, (categoryIds || []).length > 0 ? { 'bookDetails.categoryId': { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
           { $count: "totalItems" },
           {
             $project: {
