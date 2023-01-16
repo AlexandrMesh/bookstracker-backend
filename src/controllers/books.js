@@ -4,7 +4,9 @@ const User = mongoose.model('User');
 const UserBook = mongoose.model('UserBook');
 
 const getBook = async (req, res) => {
-  const { userId, bookId } = req.query;
+  const { bookId } = req.query;
+
+  const userId = res.locals.userId;
 
   if (!bookId) {
     return res.status(500).send('Must provide id');
@@ -70,8 +72,10 @@ const addBookToList = async (bookId, userId, bookStatus) => {
 };
 
 const updateUserBook = async (req, res) => {
-  const { bookId, userId, bookStatus } = req.body;
+  const { bookId, bookStatus } = req.body;
   
+  const userId = res.locals.userId;
+
   if (!userId) {
     return res.status(500).send('Must provide user id');
   }

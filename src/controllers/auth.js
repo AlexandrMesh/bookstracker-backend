@@ -11,45 +11,70 @@ const User = mongoose.model('User');
 const checkAuth = async (req, res) => {
   const { token } = req.query;
   if (!token) {
-    return res.status(500).send('Must provide token');
+    return res.status(500).send({
+      fieldName: 'token',
+      key: 'noToken',
+      error: 'Must provide token'
+    });
   }
 
-  jwt.verify(token, process.env.SECRET_KEY, async (err, payload) => {
-    if (err) {
-      return res.status(500).send('Incorrect token!');
-    }
-
-    const { userId } = payload;
-
+  try {
+    const { userId } = jwt.verify(token, process.env.SECRET_KEY);
     try {
       const { _id, email, registered, updated } = await User.findById(userId);
       res.send({ profile: { _id, email, registered, updated } });
     } catch (err) {
-      return res.status(500).send('Something went wrong');
+      return res.status(500).send({
+        fieldName: 'other',
+        key: 'somethingWentWrong',
+        error: 'Something went wrong'
+      });
     }
-  });
+  } catch (err) {
+    return res.status(500).send({
+      fieldName: 'token',
+      key: 'incorrectToken',
+      error: 'Incorrect token!'
+    });
+  }
 };
 
 const signUp = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email) {
-    return res.status(500).send('Must provide email');
+    return res.status(500).send({
+      fieldName: 'email',
+      key: 'noEmail',
+      error: 'Must provide email'
+    });
   }
 
   if (!isValidEmail(email)) {
-    return res.status(500).send('Must provide correct email');
+    return res.status(500).send({
+      fieldName: 'email',
+      key: 'incorrectEmail',
+      error: 'Must provide correct email'
+    });
   }
 
   //password (min and max length)
   if (!password) {
-    return res.status(500).send('Must provide password');
+    return res.status(500).send({
+      fieldName: 'password',
+      key: 'noPassword',
+      error: 'Must provide password'
+    });
   }
 
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(500).send('Email is already taken');
+      return res.status(500).send({
+        fieldName: 'email',
+        key: 'emailExists',
+        error: 'Email is already taken'
+      });
     }
 
     const currentDate = new Date();
@@ -62,7 +87,11 @@ const signUp = async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
     res.send({ token, profile });
   } catch (err) {
-    return res.status(500).send('Something went wrong');
+    return res.status(500).send({
+      fieldName: 'other',
+      key: 'somethingWentWrong',
+      error: 'Something went wrong'
+    });
   }
 };
 
@@ -75,7 +104,11 @@ const signIn = async (req, res) => {
         id_token: googleToken
       });
       if (googleEmail !== email) {
-        return res.status(401).send('Invalid google email');
+        return res.status(500).send({
+          fieldName: 'email',
+          key: 'invalidGoogleEmail',
+          error: 'Invalid google email'
+        });
       }
       const user = await User.findOne({ email });
       let userId;
@@ -94,33 +127,57 @@ const signIn = async (req, res) => {
       const token = jwt.sign({ userId }, process.env.SECRET_KEY);
       return res.send({ token, profile });
     } catch (e) {
-      return res.status(500).send('Something went wrong');
+      return res.status(500).send({
+        fieldName: 'other',
+        key: 'somethingWentWrong',
+        error: 'Something went wrong'
+      });
     }
   }
 
   if (!email) {
-    return res.status(401).send('Must provide email');
+    return res.status(500).send({
+      fieldName: 'email',
+      key: 'noEmail',
+      error: 'Must provide email'
+    });
   }
 
   if (!isValidEmail(email)) {
-    return res.status(500).send('Must provide correct email');
+    return res.status(500).send({
+      fieldName: 'email',
+      key: 'incorrectEmail',
+      error: 'Must provide correct email'
+    });
   }
 
   if (!password) {
-    return res.status(401).send('Must provide password');
+    return res.status(500).send({
+      fieldName: 'password',
+      key: 'noPassword',
+      error: 'Must provide password'
+    });
   }
 
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).send('Invalid password or email');
+      return res.status(500).send({
+        fieldName: 'email',
+        key: 'noUser',
+        error: 'No user with this email'
+      });
     }
     await user.comparePassword(password);
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
     profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated }
     return res.send({ token, profile });
   } catch (err) {
-    return res.status(401).send('Something went wrong');
+    return res.status(500).send({
+      fieldName: 'other',
+      key: 'somethingWentWrong',
+      error: 'Something went wrong'
+    });
   }
 };
 

@@ -28,10 +28,10 @@ router.get('/', async (req, res) => {
   // page * limit - limit -- if start page is 1
   // page * limit -- if start page is 0
   const limit = 5;
-  const page = req.query.page || 0;
-  const skip = page * limit;
+  const pageIndex = req.query.pageIndex || 0;
+  const skip = pageIndex * limit;
   const title = (req.query.title || '').toString();
-  const userId = req.query.userId;
+  const userId = res.locals.userId;
   const boardType = req.query.boardType;
   const categoryIds = req.query.categoryIds && req.query.categoryIds.length && req.query.categoryIds.map(item => Number(item));
   const sortType = req.query.sortType || 'title';
