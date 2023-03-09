@@ -6,15 +6,8 @@ const bookSchema = new mongoose.Schema({
   coverPath: String,
   authorsList: [String],
   annotation: String,
-  isbn: String,
-  pages: String,
-  publisher: String,
-  year: Number,
-  votesCount: Number,
-  rating: Number,
-  added: Number,
-  bookStatus: String,
-  bookDetails: {}
+  pages: Number,
+  votesCount: Number
 });
 
 mongoose.model('Book', bookSchema);
