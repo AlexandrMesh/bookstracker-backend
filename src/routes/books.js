@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
 
   // page * limit - limit -- if start page is 1
   // page * limit -- if start page is 0
-  const limit = 5;
+  const limit = Number(req.query.limit) || 0;
   const pageIndex = req.query.pageIndex || 0;
   const skip = pageIndex * limit;
   const title = (req.query.title || '').toString();
@@ -58,7 +58,7 @@ router.get('/', async (req, res) => {
           
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
           { $match : { userId: mongoose.Types.ObjectId(userId), bookStatus: boardType } },
-          { $project: { bookDetails: { title: 1, categoryId: 1, coverPath: 1, rating: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
+          { $project: { bookDetails: { title: 1, authorsList: 1, categoryId: 1, coverPath: 1, rating: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0 } },
           { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
@@ -105,7 +105,7 @@ router.get('/', async (req, res) => {
             },
             { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
             
-            { $project: { bookDetails: { added: 1, bookStatus: 1}, _id: 0, title: 1, bookId: '$_id', categoryId: 1, coverPath: 1, rating: 1 } },
+            { $project: { bookDetails: { added: 1, bookStatus: 1}, _id: 0, title: 1, authorsList: 1, bookId: '$_id', categoryId: 1, coverPath: 1, rating: 1 } },
             
             { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
             { $project: { bookDetails: 0 } },
