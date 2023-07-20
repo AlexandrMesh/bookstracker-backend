@@ -20,9 +20,10 @@ const checkAuth = async (req, res) => {
 
   try {
     const { userId } = jwt.verify(token, process.env.SECRET_KEY);
+    const version = process.env.npm_package_version;
     try {
       const { _id, email, registered, updated } = await User.findById(userId);
-      res.send({ profile: { _id, email, registered, updated } });
+      res.send({ profile: { _id, email, registered, updated, version } });
     } catch (err) {
       return res.status(500).send({
         fieldName: 'other',

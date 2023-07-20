@@ -3,6 +3,8 @@ require('./src/db/mongo.js');
 require('./src/models/User');
 require('./src/models/Book');
 require('./src/models/UserBook');
+require('./src/models/App');
+require('./src/models/Category');
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
@@ -15,6 +17,8 @@ const auth = require('./src/routes/auth');
 const index = require('./src/routes/index');
 const books = require('./src/routes/books');
 const data = require('./src/routes/data');
+const appInfo = require('./src/routes/appInfo');
+const categories = require('./src/routes/categories');
 
 const app = express();
 
@@ -28,6 +32,8 @@ app.use(auth);
 app.use(requireAuth, data);
 app.use('/', index);
 app.use('/books', requireAuth, books);
+app.use(requireAuth, appInfo);
+app.use(requireAuth, categories);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

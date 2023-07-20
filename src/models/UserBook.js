@@ -7,7 +7,7 @@ const userBookSchema = new mongoose.Schema({
   added: Number,
   bookDetails: {
     title: String,
-    categoryId: Number,
+    categoryPath: String,
     coverPath: String,
     authorsList: [String],
     annotation: String,

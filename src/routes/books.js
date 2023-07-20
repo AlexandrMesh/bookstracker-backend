@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
 
   // page * limit - limit -- if start page is 1
   // page * limit -- if start page is 0
-  const limit = Number(req.query.limit) || 0;
+  const limit = Number(req.query.limit) || 1;
   const pageIndex = req.query.pageIndex || 0;
   const skip = pageIndex * limit;
   const title = (req.query.title || '').toString();
