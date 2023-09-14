@@ -5,7 +5,7 @@ const DB = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD
 );
 
-const db2 = `mongodb://admin:${encodeURIComponent('JDASD&#ASDgsdds')}@185.12.94.36:27017/bookstracker?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false`
+const db2 = `mongodb://admin:${encodeURIComponent('JDASD&#ASDgsdds')}@185.12.94.36:27017/bookboard?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false`
 
 // mongoose.set('useFindAndModify', false);
 mongoose.connect(db2, {serverSelectionTimeoutMS: 5000});

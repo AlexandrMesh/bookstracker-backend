@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
   const title = (req.query.title || '').toString();
   const userId = res.locals.userId;
   const boardType = req.query.boardType;
-  const categoryIds = req.query.categoryIds && req.query.categoryIds.length && req.query.categoryIds.map(item => Number(item));
+  const categoryIds = req.query.categoryIds && req.query.categoryIds.length > 0 && req.query.categoryIds;
   const sortType = req.query.sortType || 'title';
   const sortDirection = Number(req.query.sortDirection) || 1;
 
@@ -58,17 +58,17 @@ router.get('/', async (req, res) => {
           
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
           { $match : { userId: mongoose.Types.ObjectId(userId), bookStatus: boardType } },
-          { $project: { bookDetails: { title: 1, authorsList: 1, categoryId: 1, coverPath: 1, rating: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
+          { $project: { bookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, rating: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0 } },
-          { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+          { $match : { $and: [(categoryIds || []).length > 0 ? { categoryPath: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
           { $sort : { [sortType]: sortDirection, ...(sortType !== 'title' && { title: sortDirection }) } },
           { $skip : skip },
           { $limit : limit }
         ],
         pagination: [
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
-          { $match : { $and: [{ userId: mongoose.Types.ObjectId(userId) }, { bookStatus: boardType }, (categoryIds || []).length > 0 ? { 'bookDetails.categoryId': { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+          { $match : { $and: [{ userId: mongoose.Types.ObjectId(userId) }, { bookStatus: boardType }, (categoryIds || []).length > 0 ? { 'bookDetails.categoryPath': { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
           { $count: "totalItems" },
           {
             $project: {
@@ -103,9 +103,9 @@ router.get('/', async (req, res) => {
                 }],
               as: 'bookDetails' }
             },
-            { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+            { $match : { $and: [(categoryIds || []).length > 0 ? { categoryPath: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
             
-            { $project: { bookDetails: { added: 1, bookStatus: 1}, _id: 0, title: 1, authorsList: 1, bookId: '$_id', categoryId: 1, coverPath: 1, rating: 1 } },
+            { $project: { bookDetails: { added: 1, bookStatus: 1}, _id: 0, title: 1, authorsList: 1, bookId: '$_id', categoryPath: 1, coverPath: 1, rating: 1 } },
             
             { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
             { $project: { bookDetails: 0 } },
@@ -113,7 +113,7 @@ router.get('/', async (req, res) => {
             { $limit : limit }
           ],
           pagination: [
-            { $match : { $and: [(categoryIds || []).length > 0 ? { categoryId: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+            { $match : { $and: [(categoryIds || []).length > 0 ? { categoryPath: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
             { $count: "totalItems" },
             {
               $project: {
