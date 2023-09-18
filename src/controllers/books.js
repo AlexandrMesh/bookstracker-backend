@@ -87,7 +87,7 @@ const updateUserBook = async (req, res) => {
   try {
     const response = {};
     if (bookStatus === 'all') {
-      await UserBook.remove({ bookId, userId });
+      await UserBook.deleteOne({ bookId, userId });
     } else {
       const currentDate = new Date();
       const timestamp = currentDate.getTime();

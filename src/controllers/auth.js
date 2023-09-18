@@ -175,9 +175,9 @@ const signIn = async (req, res) => {
     return res.send({ token, profile });
   } catch (err) {
     return res.status(500).send({
-      fieldName: 'other',
-      key: 'somethingWentWrong',
-      error: 'Something went wrong'
+      fieldName: 'password',
+      key: 'wrongEmailOrPassword',
+      error: 'Wrong email or password'
     });
   }
 };

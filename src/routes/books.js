@@ -33,22 +33,18 @@ router.get('/', async (req, res) => {
   const title = (req.query.title || '').toString();
   const userId = res.locals.userId;
   const boardType = req.query.boardType;
-  const categoryIds = req.query.categoryIds && req.query.categoryIds.length > 0 && req.query.categoryIds;
+  const categoryPaths = req.query.categoryPaths && req.query.categoryPaths.length > 0 && req.query.categoryPaths;
   const sortType = req.query.sortType || 'title';
   const sortDirection = Number(req.query.sortDirection) || 1;
 
   const itemsCount = skip + limit;
 
-  // const condition = await getQuery(userId, bookListStatus, categoryIds, title);
+  // const condition = await getQuery(userId, bookListStatus, categoryPaths, title);
 
   const user = userId ? await User.findById(userId).lean() : {};
   // const usersBookList = user.usersBookList || {};
 
   let result;
-
-  console.log(categoryIds, 'categoryIds');
-  console.log(title, 'title');
-  console.log(boardType, 'boardType');
 
   if (boardType !== 'all') {
     result = await UserBook.aggregate([
@@ -58,17 +54,17 @@ router.get('/', async (req, res) => {
           
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
           { $match : { userId: mongoose.Types.ObjectId(userId), bookStatus: boardType } },
-          { $project: { bookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, rating: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
+          { $project: { bookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0 } },
-          { $match : { $and: [(categoryIds || []).length > 0 ? { categoryPath: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+          { $match : { $and: [(categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
           { $sort : { [sortType]: sortDirection, ...(sortType !== 'title' && { title: sortDirection }) } },
           { $skip : skip },
           { $limit : limit }
         ],
         pagination: [
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
-          { $match : { $and: [{ userId: mongoose.Types.ObjectId(userId) }, { bookStatus: boardType }, (categoryIds || []).length > 0 ? { 'bookDetails.categoryPath': { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+          { $match : { $and: [{ userId: mongoose.Types.ObjectId(userId) }, { bookStatus: boardType }, (categoryPaths || []).length > 0 ? { 'bookDetails.categoryPath': { $in: categoryPaths } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
           { $count: "totalItems" },
           {
             $project: {
@@ -86,7 +82,6 @@ router.get('/', async (req, res) => {
     result = await Book.aggregate([
       { $facet: {
           items: [
-            { $sort : { [sortType]: sortDirection } },
             { $lookup: { 
               from: 'userbooks', 
               let: { bookId: "$_id" },
@@ -103,17 +98,18 @@ router.get('/', async (req, res) => {
                 }],
               as: 'bookDetails' }
             },
-            { $match : { $and: [(categoryIds || []).length > 0 ? { categoryPath: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+            { $match : { $and: [(categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
             
-            { $project: { bookDetails: { added: 1, bookStatus: 1}, _id: 0, title: 1, authorsList: 1, bookId: '$_id', categoryPath: 1, coverPath: 1, rating: 1 } },
+            { $project: { bookDetails: { added: 1, bookStatus: 1}, _id: 0, title: 1, authorsList: 1, bookId: '$_id', categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1 } },
             
             { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
             { $project: { bookDetails: 0 } },
+            { $sort : { [sortType]: sortDirection, ...(sortType !== 'title' && { title: sortDirection }) } },
             { $skip : skip },
             { $limit : limit }
           ],
           pagination: [
-            { $match : { $and: [(categoryIds || []).length > 0 ? { categoryPath: { $in: categoryIds } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+            { $match : { $and: [(categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
             { $count: "totalItems" },
             {
               $project: {
