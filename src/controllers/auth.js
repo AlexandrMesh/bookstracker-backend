@@ -42,8 +42,9 @@ const checkAuth = async (req, res) => {
 
 const signUp = async (req, res) => {
   const { email, password } = req.body;
+  const lowerCasedEmail = email.toLowerCase();
 
-  if (!email) {
+  if (!lowerCasedEmail) {
     return res.status(500).send({
       fieldName: 'email',
       key: 'noEmail',
@@ -51,7 +52,7 @@ const signUp = async (req, res) => {
     });
   }
 
-  if (!isValidEmail(email)) {
+  if (!isValidEmail(lowerCasedEmail)) {
     return res.status(500).send({
       fieldName: 'email',
       key: 'incorrectEmail',
@@ -69,7 +70,7 @@ const signUp = async (req, res) => {
   }
 
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: lowerCasedEmail });
     if (existingUser) {
       return res.status(500).send({
         fieldName: 'email',
@@ -81,10 +82,10 @@ const signUp = async (req, res) => {
     const currentDate = new Date();
     const registered = currentDate.getTime();
 
-    const user = new User({ email, password, registered });
+    const user = new User({ email: lowerCasedEmail, password, registered });
     await user.save();
 
-    const profile = { _id: user._id, email: user.email }
+    const profile = { _id: user._id, email: user.email, registered: user.registered }
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
     res.send({ token, profile });
   } catch (err) {
@@ -98,29 +99,30 @@ const signUp = async (req, res) => {
 
 const signIn = async (req, res) => {
   const { email, password, googleToken } = req.body;
+  const lowerCasedEmail = email.toLowerCase();
 
   if (googleToken) {
     try {
       const { data: { email: googleEmail } } = await axios.post('https://oauth2.googleapis.com/tokeninfo', {
         id_token: googleToken
       });
-      if (googleEmail !== email) {
+      if (googleEmail.toLowerCase() !== lowerCasedEmail) {
         return res.status(500).send({
           fieldName: 'email',
           key: 'invalidGoogleEmail',
           error: 'Invalid google email'
         });
       }
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email: lowerCasedEmail });
       let userId;
       let profile;
+      const currentDate = new Date();
+      const registered = currentDate.getTime();
       if (!user) {
-        const newUser = new User({ email, password: googleToken });
+        const newUser = new User({ email: lowerCasedEmail, password: googleToken, registered });
         await newUser.save();
         userId = newUser._id;
-        const currentDate = new Date();
-        const registered = currentDate.getTime();
-        profile = { _id: newUser._id, email: newUser.email, registered }
+        profile = { _id: newUser._id, email: newUser.email, registered: newUser.registered }
       } else {
         userId = user._id;
         profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated }
@@ -136,7 +138,7 @@ const signIn = async (req, res) => {
     }
   }
 
-  if (!email) {
+  if (!lowerCasedEmail) {
     return res.status(500).send({
       fieldName: 'email',
       key: 'noEmail',
@@ -144,7 +146,7 @@ const signIn = async (req, res) => {
     });
   }
 
-  if (!isValidEmail(email)) {
+  if (!isValidEmail(lowerCasedEmail)) {
     return res.status(500).send({
       fieldName: 'email',
       key: 'incorrectEmail',
@@ -161,7 +163,7 @@ const signIn = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: lowerCasedEmail });
     if (!user) {
       return res.status(500).send({
         fieldName: 'email',
