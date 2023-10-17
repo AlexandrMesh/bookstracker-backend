@@ -79,7 +79,7 @@ router.get('/', async (req, res) => {
   } else {
     result = await Book.aggregate([
       { $sort : { [sortType]: sortDirection, ...(sortType !== 'title' && { title: sortDirection }) } },
-      { $match : { $and: [(categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+      { $match : { $and: [(categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
       { $facet: {
           items: [
             { $lookup: { 
@@ -106,7 +106,7 @@ router.get('/', async (req, res) => {
             { $limit : limit },
           ],
           pagination: [
-            { $match : { $and: [(categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+            { $match : { $and: [(categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
             { $count: "totalItems" },
             {
               $project: {
