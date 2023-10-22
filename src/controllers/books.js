@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Book = mongoose.model('Book');
 const User = mongoose.model('User');
 const UserBook = mongoose.model('UserBook');
+const UserVote = mongoose.model('UserVote');
 
 const getBook = async (req, res) => {
   const { bookId } = req.query;
@@ -71,6 +72,58 @@ const addBookToList = async (bookId, userId, bookStatus) => {
   }
 };
 
+const updateBookVotes = async (req, res) => {
+  const { bookId, shouldAdd } = req.body;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  if (!bookId) {
+    return res.status(500).send('Must provide book id');
+  }
+
+  try {
+    let updatedBook;
+    if (shouldAdd) {
+      const currentDate = new Date();
+      const timestamp = currentDate.getTime();
+      await UserVote.findOneAndUpdate(
+        { userId, bookId },
+        { userId, bookId, added: timestamp, count: 1 },
+        { new: true, upsert: true }
+      )
+      updatedBook = await Book.findOneAndUpdate(
+        { _id: bookId },
+        {
+          $inc: {
+            votesCount: 1
+          }
+        },
+        { new: true }
+      ).select({ votesCount: 1 });
+    } else {
+      await UserVote.deleteOne({ bookId, userId });
+      updatedBook = await Book.findOneAndUpdate(
+        { _id: bookId },
+        {
+          $inc: {
+            votesCount: -1
+          }
+        },
+        { new: true }
+      ).select({ votesCount: 1 });
+    }
+    const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
+    res.send({ votesCount: updatedBook.votesCount, userVotes });
+  } catch (err) {
+    console.log(err, 'err');
+    return res.status(500).send('Something went wrong');
+  }
+};
+
 const updateUserBook = async (req, res) => {
   const { bookId, bookStatus } = req.body;
   
@@ -109,4 +162,4 @@ const updateUserBook = async (req, res) => {
   }
 };
 
-module.exports = { getBook, getBooksList, updateUserBook };
+module.exports = { getBook, getBooksList, updateUserBook, updateBookVotes };
