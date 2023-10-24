@@ -8,6 +8,7 @@ const { isValidEmail } = require('../utils/isValidEmail');
 
 const User = mongoose.model('User');
 const UserVote = mongoose.model('UserVote');
+const App = mongoose.model('App');
 
 const checkAuth = async (req, res) => {
   const { token } = req.query;
@@ -21,11 +22,12 @@ const checkAuth = async (req, res) => {
 
   try {
     const { userId } = jwt.verify(token, process.env.SECRET_KEY);
-    const version = process.env.npm_package_version;
     try {
+      const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
+      const { version, googlePlayUrl } = appInfo[0] || {};
       const { _id, email, registered, updated } = await User.findById(userId);
       const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
-      res.send({ profile: { _id, email, registered, updated, version }, userVotes });
+      res.send({ profile: { _id, email, registered, updated }, version, googlePlayUrl, userVotes });
     } catch (err) {
       return res.status(500).send({
         fieldName: 'other',
@@ -87,9 +89,11 @@ const signUp = async (req, res) => {
     const user = new User({ email: lowerCasedEmail, password, registered });
     await user.save();
 
+    const appInfo = await App.find({});
+    const { version, googlePlayUrl } = appInfo[0] || {};
     const profile = { _id: user._id, email: user.email, registered: user.registered }
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
-    res.send({ token, profile });
+    res.send({ token, profile, version, googlePlayUrl });
   } catch (err) {
     return res.status(500).send({
       fieldName: 'other',
@@ -131,7 +135,9 @@ const signIn = async (req, res) => {
       }
       const token = jwt.sign({ userId }, process.env.SECRET_KEY);
       const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
-      return res.send({ token, profile, userVotes });
+      const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
+      const { version, googlePlayUrl } = appInfo[0] || {};
+      return res.send({ token, profile, version, googlePlayUrl, userVotes });
     } catch (e) {
       return res.status(500).send({
         fieldName: 'other',
@@ -178,7 +184,9 @@ const signIn = async (req, res) => {
     const userVotes = await UserVote.find({ userId: user._id }).select({ bookId: 1, count: 1 });
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
     profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated }
-    return res.send({ token, profile, userVotes });
+    const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
+    const { version, googlePlayUrl } = appInfo[0] || {};
+    return res.send({ token, profile, userVotes, version, googlePlayUrl });
   } catch (err) {
     console.log(err, 'err');
     return res.status(500).send({

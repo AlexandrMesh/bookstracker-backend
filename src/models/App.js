@@ -4,7 +4,8 @@ const appInfoSchema = new mongoose.Schema({
   name: String,
   version: String,
   description: String,
-  email: String
+  email: String,
+  googlePlayUrl: String
 });
 
 mongoose.model('App', appInfoSchema);
