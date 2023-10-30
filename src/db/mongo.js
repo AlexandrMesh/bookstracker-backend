@@ -12,15 +12,15 @@ mongoose.connect(db2, {serverSelectionTimeoutMS: 5000});
 const connection = mongoose.connection;
 connection.on('error', () => {
   console.error.bind(console, 'connection error:');
-  setTimeout(() => {
-    mongoose.connect(db2, {serverSelectionTimeoutMS: 5000});
-  }, 5000);
+  // setTimeout(() => {
+  //   mongoose.connect(db2, {serverSelectionTimeoutMS: 5000});
+  // }, 5000);
 });
 connection.on('disconnected', () => {
   console.log('Lost MongoDB connection...');
-  setTimeout(() => {
-    mongoose.connect(db2, {serverSelectionTimeoutMS: 5000});
-  }, 5000);
+  // setTimeout(() => {
+  //   mongoose.connect(db2, {serverSelectionTimeoutMS: 5000});
+  // }, 5000);
 });
 connection.on('connected', async () => {
   console.log('Connected to mongoDb');

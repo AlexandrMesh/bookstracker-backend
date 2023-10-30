@@ -75,7 +75,7 @@ router.get('/', async (req, res) => {
         ]
       }},
       { $unwind: '$pagination' }
-    ]);
+    ], { allowDiskUse : true });
   } else {
     result = await Book.aggregate([
       { $sort : { [sortType]: sortDirection, ...(sortType !== 'title' && { title: sortDirection }) } },
@@ -120,7 +120,7 @@ router.get('/', async (req, res) => {
         }
       },
       { $unwind: '$pagination' }
-    ]);
+    ], { allowDiskUse : true });
   }
 
   console.log(result, 'result');

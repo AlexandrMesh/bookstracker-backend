@@ -33,7 +33,7 @@ app.use(auth);
 app.use(requireAuth, data);
 app.use('/', index);
 app.use('/books', requireAuth, books);
-app.use(requireAuth, appInfo);
+app.use(appInfo);
 app.use(requireAuth, categories);
 
 // catch 404 and forward to error handler
