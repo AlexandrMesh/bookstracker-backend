@@ -30,10 +30,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(auth);
+app.use(appInfo);
 app.use(requireAuth, data);
 app.use('/', index);
 app.use('/books', requireAuth, books);
-app.use(appInfo);
 app.use(requireAuth, categories);
 
 // catch 404 and forward to error handler

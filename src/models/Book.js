@@ -7,7 +7,8 @@ const bookSchema = new mongoose.Schema({
   authorsList: [String],
   annotation: String,
   pages: Number,
-  votesCount: Number
+  votesCount: Number,
+  language: String
 });
 
 mongoose.model('Book', bookSchema);

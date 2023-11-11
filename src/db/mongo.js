@@ -5,8 +5,8 @@ const DB = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD
 );
 
-const dbName = process.env.NODE_ENV === 'production' ? 'bookboard' : 'bookboard_dev';
-const db2 = `mongodb://admin:${encodeURIComponent('JDASD&#ASDgsdds')}@185.12.94.36:27017/${dbName}?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false`
+const dbName = process.env.NODE_ENV === 'production' ? 'bookdesk' : 'bookdesk_dev';
+const db2 = `mongodb://adminPeshka:${encodeURIComponent('JDASD&#ASDgsdds')}@91.240.254.163/${dbName}?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false`
 
 mongoose.connect(db2, {serverSelectionTimeoutMS: 5000});
 const connection = mongoose.connection;

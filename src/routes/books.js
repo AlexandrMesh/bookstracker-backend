@@ -33,6 +33,7 @@ router.get('/', async (req, res) => {
   const title = (req.query.title || '').toString();
   const userId = res.locals.userId;
   const boardType = req.query.boardType;
+  const language = req.query.language || 'en';
   const categoryPaths = req.query.categoryPaths && req.query.categoryPaths.length > 0 && req.query.categoryPaths;
   const sortType = req.query.sortType || 'title';
   const sortDirection = Number(req.query.sortDirection) || 1;
@@ -43,30 +44,34 @@ router.get('/', async (req, res) => {
 
   const user = userId ? await User.findById(userId).lean() : {};
   // const usersBookList = user.usersBookList || {};
-
+  const count = boardType !== 'all' ? await UserBook.find({ userId, bookStatus: boardType }).count() : await Book.count();
+  
   let result;
 
   if (boardType !== 'all') {
     result = await UserBook.aggregate([
-      { $match : { $and: [(categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
       { $sort : { [sortType]: sortDirection } },
-      // { $limit : 10000 },
-      { $skip : skip },
+      { $limit : 10000 },
       { $facet: {
         items: [
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
           { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
-          { $project: { bookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
+          { $project: { bookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1, language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0 } },
+          { $match : { language } },
+          { $skip : skip },
           { $limit : limit }
         ],
         pagination: [
-          { $match : { $and: [{ userId: new mongoose.Types.ObjectId(userId) }, { bookStatus: boardType }, (categoryPaths || []).length > 0 ? { 'bookDetails.categoryPath': { $in: categoryPaths } } : {}, title ? { title: { $regex: title, $options: 'i' }} : {} ] } },
+          { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
+          { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
+          { $project: { bookDetails: { language: 1 } } },
+          { $match : { 'bookDetails.language': language } },
           { $count: "totalItems" },
           {
             $project: {
-              "hasNextPage": {
+              hasNextPage: {
                 $cond: { if: { $gt: [ '$totalItems', itemsCount ] }, then: true, else: false }
               },
               "totalItems": '$totalItems'
@@ -78,10 +83,9 @@ router.get('/', async (req, res) => {
     ], { allowDiskUse : true });
   } else {
     result = await Book.aggregate([
-      { $match : { $and: [(categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
+      { $match : { $and: [{ language }, (categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
       { $sort : { [sortType]: sortDirection } },
-      // { $limit : 10000 },
-      { $skip : skip },
+      { $limit : 10000 },
       { $facet: {
           items: [
             { $lookup: { 
@@ -104,17 +108,20 @@ router.get('/', async (req, res) => {
             { $project: { bookDetails: { added: 1, bookStatus: 1}, _id: 0, title: 1, authorsList: 1, bookId: '$_id', categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1 } },
             { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
             { $project: { bookDetails: 0 } },
+            { $skip : skip },
             { $limit : limit },
           ],
           pagination: [
-            { $match : { $and: [(categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
+            { $match : { $and: [{ language }, (categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
             { $count: "totalItems" },
             {
               $project: {
                 hasNextPage: {
                   $cond: { if: { $gt: [ '$totalItems', itemsCount ] }, then: true, else: false }
                 },
-                totalItems: '$totalItems'
+                totalItems: {
+                  $cond: [(categoryPaths || []).length > 0 || !!title, '$totalItems', count ]
+                }
               }
             }
           ]
@@ -125,21 +132,6 @@ router.get('/', async (req, res) => {
   }
 
   console.log(result, 'result');
-
-  // const books = await Book.find(condition, null, { skip, limit }).select(['title', 'categoryId', 'coverPath', 'rating']).sort({ [sortType]: sortDirection }).lean();
-
-  // const mappedBookList = books.map(book => {
-  //   const isPlanned = (usersBookList.planned || []).some((plannedBook) => book._id.toString() === plannedBook.id) && 'planned';
-  //   const isInProgress = (usersBookList.inProgress || []).some((inProgressBook) => book._id.toString() === inProgressBook.id) && 'inProgress';
-  //   const isCompleted = (usersBookList.completed || []).some((completedBook) => book._id.toString() === completedBook.id) && 'completed';
-  //   const status = isPlanned || isInProgress || isCompleted;
-  //   if (status) {
-  //     const { added } = (usersBookList[status] || []).find((usersBook) => book._id.toString() === usersBook.id) || {};
-  //     return { ...book, status, added };
-  //   } else {
-  //     return book;
-  //   }
-  // });
 
   res.send(result[0]);
   

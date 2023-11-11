@@ -5,9 +5,9 @@ const App = mongoose.model('App');
 const getAppInfo = async (req, res) => {
   try {
     try {
-      const result = await App.find({}).select({ name: 1, description: 1, email: 1, version: 1 });
-      const { name, description, email, version } = result[0] || {};
-      res.send({ name, description, email, version });
+      const result = await App.find({}).select({ name: 1, description: 1, descriptionEn: 1, email: 1, version: 1 });
+      const { name, description, descriptionEn, email, version } = result[0] || {};
+      res.send({ name, description, descriptionEn, email, version });
     } catch (err) {
       return res.status(500).send({
         fieldName: 'other',
@@ -23,9 +23,9 @@ const getAppInfo = async (req, res) => {
 const getUnderConstruction = async (req, res) => {
   try {
     try {
-      const result = await App.find({}).select({ underConstruction: 1 });
-      const { underConstruction } = result[0] || {};
-      res.send({ underConstruction });
+      const result = await App.find({}).select({ underConstruction: 1, underConstructionEn: 1 });
+      const { underConstruction, underConstructionEn } = result[0] || {};
+      res.send({ underConstruction, underConstructionEn });
     } catch (err) {
       return res.status(500).send({
         fieldName: 'other',

@@ -2,6 +2,13 @@
 
 ## bookdesk
 
+## 1.5.0
+
+###### 2023-10-30
+
+- [New] Added english version
+- [Fix] Optimization performance
+
 ## 1.4.0
 
 ###### 2023-10-30
