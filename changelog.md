@@ -4,7 +4,7 @@
 
 ## 1.6.0
 
-###### 2023-10-30
+###### 2023-11-24
 
 - [New] Added add custom book feature
 
