@@ -1,10 +1,5 @@
 const mongoose = require('mongoose');
 
-const DB = process.env.DATABASE.replace(
-  '<password>',
-  process.env.DATABASE_PASSWORD
-);
-
 const dbName = process.env.NODE_ENV === 'production' ? 'bookdesk' : 'bookdesk_dev';
 const db2 = `mongodb://adminPeshka:${encodeURIComponent('JDASD&#ASDgsdds')}@91.240.254.163/${dbName}?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false`
 

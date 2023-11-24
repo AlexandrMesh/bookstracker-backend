@@ -2,6 +2,7 @@ require('dotenv').config();
 require('./src/db/mongo.js');
 require('./src/models/User');
 require('./src/models/Book');
+require('./src/models/CustomBook');
 require('./src/models/UserBook');
 require('./src/models/UserVote');
 require('./src/models/App');
