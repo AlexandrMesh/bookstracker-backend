@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  location: String,
+  language: String,
   resetPassword: {
     hashCode: String,
     expire_timestamp: Number,
