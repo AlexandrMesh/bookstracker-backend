@@ -3,31 +3,12 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Book = mongoose.model('Book');
 const CustomBook = mongoose.model('CustomBook');
-const User = mongoose.model('User');
 const UserBook = mongoose.model('UserBook');
+const { validationResult } = require('express-validator');
+const { getBooksValidator } = require('../validators/data');
 
-/* GET users listing. */
-router.get('/', async (req, res) => {
-  
+router.get('/', getBooksValidator, async (req, res) => {
 
-  // limit = 50
-  // skip
-  // page = 1,2,3,4,5
-
-  // page 0
-  // skip 0
-  // limit 50
-
-  // page 1
-  // skip 50
-  // limit 50
-
-  // page 2
-  // skip 100
-  // limit 50
-
-  // page * limit - limit -- if start page is 1
-  // page * limit -- if start page is 0
   const limit = Number(req.query.limit) || 1;
   const pageIndex = req.query.pageIndex || 0;
   const skip = pageIndex * limit;
@@ -40,12 +21,10 @@ router.get('/', async (req, res) => {
   const sortType = req.query.sortType || 'title';
   const sortDirection = Number(req.query.sortDirection) || 1;
 
-  const itemsCount = skip + limit;
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    const itemsCount = skip + limit;
 
-  // const condition = await getQuery(userId, bookListStatus, categoryPaths, title);
-
-  const user = userId ? await User.findById(userId).lean() : {};
-  // const usersBookList = user.usersBookList || {};
   const count = boardType !== 'all' ? await UserBook.find({ userId, bookStatus: boardType }).count() : await Book.count() + await CustomBook.count();
 
   let result;
@@ -140,8 +119,10 @@ router.get('/', async (req, res) => {
     ], { allowDiskUse : true });
   }
 
-  res.send(result[0]);
-  
+  return res.send(result[0]);
+  } else {
+    return res.status(500).send({ errors: result.array({ onlyFirstError: true }) });
+  }
 });
 
 module.exports = router;

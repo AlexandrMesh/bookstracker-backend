@@ -3,6 +3,7 @@ const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const bcrypt = require('bcrypt');
+const { validationResult } = require('express-validator');
 const { sendEmail } = require('../utils/sendEmail');
 const { isValidEmail } = require('../utils/isValidEmail');
 
@@ -12,35 +13,33 @@ const App = mongoose.model('App');
 
 const checkAuth = async (req, res) => {
   const { token } = req.query;
-  if (!token) {
-    return res.status(500).send({
-      fieldName: 'token',
-      key: 'noToken',
-      error: 'Must provide token'
-    });
-  }
 
-  try {
-    const { userId } = jwt.verify(token, process.env.SECRET_KEY);
+  const result = validationResult(req);
+  if (result.isEmpty()) {
     try {
-      const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
-      const { version, googlePlayUrl } = appInfo[0] || {};
-      const { _id, email, registered, updated } = await User.findById(userId);
-      const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
-      res.send({ profile: { _id, email, registered, updated }, version, googlePlayUrl, userVotes });
+      const { userId } = jwt.verify(token, process.env.SECRET_KEY);
+      try {
+        const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
+        const { version, googlePlayUrl } = appInfo[0] || {};
+        const { _id, email, registered, updated } = await User.findById(userId);
+        const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
+        res.send({ profile: { _id, email, registered, updated }, version, googlePlayUrl, userVotes });
+      } catch (err) {
+        return res.status(500).send({
+          fieldName: 'other',
+          key: 'somethingWentWrong',
+          error: 'Something went wrong'
+        });
+      }
     } catch (err) {
       return res.status(500).send({
-        fieldName: 'other',
-        key: 'somethingWentWrong',
-        error: 'Something went wrong'
+        fieldName: 'token',
+        key: 'incorrectToken',
+        error: 'Incorrect token!'
       });
     }
-  } catch (err) {
-    return res.status(500).send({
-      fieldName: 'token',
-      key: 'incorrectToken',
-      error: 'Incorrect token!'
-    });
+  } else {
+    return res.status(500).send({ errors: result.array({ onlyFirstError: true }) });
   }
 };
 
@@ -48,32 +47,10 @@ const signUp = async (req, res) => {
   const { email, password } = req.body;
   const lowerCasedEmail = email.toLowerCase();
 
-  if (!lowerCasedEmail) {
-    return res.status(500).send({
-      fieldName: 'email',
-      key: 'noEmail',
-      error: 'Must provide email'
-    });
-  }
+  const result = validationResult(req);
 
-  if (!isValidEmail(lowerCasedEmail)) {
-    return res.status(500).send({
-      fieldName: 'email',
-      key: 'incorrectEmail',
-      error: 'Must provide correct email'
-    });
-  }
-
-  //password (min and max length)
-  if (!password) {
-    return res.status(500).send({
-      fieldName: 'password',
-      key: 'noPassword',
-      error: 'Must provide password'
-    });
-  }
-
-  try {
+  if (result.isEmpty()) {
+    try {
     const existingUser = await User.findOne({ email: lowerCasedEmail });
     if (existingUser) {
       return res.status(500).send({
@@ -82,7 +59,6 @@ const signUp = async (req, res) => {
         error: 'Email is already taken'
       });
     }
-
     const currentDate = new Date();
     const registered = currentDate.getTime();
 
@@ -93,13 +69,17 @@ const signUp = async (req, res) => {
     const { version, googlePlayUrl } = appInfo[0] || {};
     const profile = { _id: user._id, email: user.email, registered: user.registered }
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
-    res.send({ token, profile, version, googlePlayUrl });
+    return res.send({ token, profile, version, googlePlayUrl });
   } catch (err) {
+    console.log(err, 'err');
     return res.status(500).send({
       fieldName: 'other',
       key: 'somethingWentWrong',
       error: 'Something went wrong'
     });
+  }
+  } else {
+    return res.status(500).send({ errors: result.array({ onlyFirstError: true }) });
   }
 };
 

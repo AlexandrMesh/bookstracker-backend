@@ -1,20 +1,23 @@
 {
   "name": "bookstracker-backend",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
     "start:production": "set NODE_ENV=production&& node ./bin/www"
   },
   "dependencies": {
-    "axios": "^0.20.0",
+    "axios": "^1.6.2",
     "bcrypt": "^5.0.0",
     "cookie-parser": "~1.4.5",
-    "debug": "~4.1.1",
+    "debug": "~4.3.4",
     "dotenv": "^8.2.0",
-    "express": "~4.17.1",
+    "express": "~4.18.2",
+    "express-rate-limit": "^7.1.4",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
     "http-errors": "~1.7.3",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.2",
     "moment": "^2.29.1",
     "mongoose": "^7.6.3",
     "morgan": "~1.10.0",

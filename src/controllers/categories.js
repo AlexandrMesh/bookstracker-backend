@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
-
+const { validationResult } = require('express-validator');
 const Category = mongoose.model('Category');
 
 const getCategories = async (req, res) => {
   const { language } = req.query;
 
-  try {
+  const result = validationResult(req);
+  if (result.isEmpty()) {
     try {
       const result = await Category.find({ language });
       res.send(result);
@@ -16,8 +17,8 @@ const getCategories = async (req, res) => {
         error: 'Something went wrong'
       });
     }
-  } catch (err) {
-    console.error(err)
+  } else {
+    return res.status(500).send({ errors: result.array({ onlyFirstError: true }) });
   }
 };
 

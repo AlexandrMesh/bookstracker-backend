@@ -12,7 +12,16 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const requireAuth = require('./src/middlewares/requireAuth');
+
+const limiter = rateLimit({
+	windowMs: 1 * 60 * 1000, // 1 minute
+	limit: 30, // Limit each IP to 30 requests per `window` (here, per 1 minute).
+	standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+})
 
 // routes
 const auth = require('./src/routes/auth');
@@ -23,6 +32,10 @@ const appInfo = require('./src/routes/appInfo');
 const categories = require('./src/routes/categories');
 
 const app = express();
+
+app.use(helmet());
+app.use(limiter);
+app.disable('x-powered-by');
 
 app.use(logger('dev'));
 app.use(express.json());

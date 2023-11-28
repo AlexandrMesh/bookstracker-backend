@@ -1,73 +1,29 @@
 const mongoose = require('mongoose');
+const { validationResult } = require('express-validator');
 const Book = mongoose.model('Book');
 const CustomBook = mongoose.model('CustomBook');
-const User = mongoose.model('User');
 const UserBook = mongoose.model('UserBook');
 const UserVote = mongoose.model('UserVote');
 
 const getBook = async (req, res) => {
-  const { bookId } = req.query;
+  const { bookId, bookDetails } = req.query;
 
   const userId = res.locals.userId;
 
-  if (!bookId) {
-    return res.status(500).send('Must provide id');
-  }
-
-  try {
-    const bookDetails = await Book.findById(bookId).lean() || await CustomBook.findById(bookId).lean();
-    const book = await UserBook.findOne({ userId, bookId }) || {};
-    if (book.bookStatus) {
-      res.send({ ...bookDetails, bookStatus: book.bookStatus, added: book.added });
-    } else {
-      res.send(bookDetails);
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const book = await UserBook.findOne({ userId, bookId }) || {};
+      if (book.bookStatus) {
+        res.send({ ...bookDetails, bookStatus: book.bookStatus, added: book.added });
+      } else {
+        res.send(bookDetails);
+      }
+    } catch (err) {
+      return res.status(500).send('Something went wrong');
     }
-  } catch (err) {
-    return res.status(500).send('Something went wrong');
-  }
-};
-
-const getBooksList = async (req, res) => {
-  const { ids } = req.body;
-  if (ids || [].length === 0) {
-    return res.status(500).send('Must provide ids');
-  }
-
-  try {
-    const books = await Book.find({ _id: { $in: ids } });
-    res.send(books);
-  } catch (err) {
-    return res.status(500).send('Something went wrong');
-  }
-};
-
-const removeUserBook = async (bookId, userId) => {
-  try {
-    await User.updateOne(
-      { _id: userId },
-      { $pull: { 'usersBookList.planned': { id: bookId }, 'usersBookList.inProgress': { id: bookId }, 'usersBookList.completed': { id: bookId } } }
-    );
-    return { bookId };
-  } catch (err) {
-    console.log(err, 'removeUserBook err');
-    console.log('Something went wrong');
-  }
-}
-
-const addBookToList = async (bookId, userId, bookStatus) => {
-  try {
-    const currentDate = new Date();
-    const timestamp = currentDate.getTime();
-    const book = await Book.findById(bookId).select(['title', 'categoryId', 'coverPath', 'rating']).lean();
-    const usersBook = { ...book, id: bookId, status: bookStatus, added: timestamp };
-    const usersBookList = `usersBookList.${bookStatus}`;
-    await User.updateOne(
-      { _id: userId },
-      { $addToSet: { [usersBookList]: usersBook } }
-    );
-    return usersBook;
-  } catch (err) {
-    console.log('Something went wrong');
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
   }
 };
 
@@ -80,31 +36,23 @@ const updateBookVotes = async (req, res) => {
     return res.status(500).send('Must provide user id');
   }
 
-  if (!bookId) {
-    return res.status(500).send('Must provide book id');
-  }
-
-  try {
-    let updatedBook;
-    if (shouldAdd) {
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      let updatedBook;
       const currentDate = new Date();
       const timestamp = currentDate.getTime();
-      await UserVote.findOneAndUpdate(
-        { userId, bookId },
-        { userId, bookId, added: timestamp, count: 1 },
-        { new: true, upsert: true }
-      )
-      updatedBook = await Book.findOneAndUpdate(
-        { _id: bookId },
-        {
-          $inc: {
-            votesCount: 1
-          }
-        },
-        { new: true }
-      ).select({ votesCount: 1 });
-      if (!updatedBook) {
-        updatedBook = await CustomBook.findOneAndUpdate(
+      const userVote = await UserVote.findOne({ userId, bookId });
+      if (!shouldAdd && !userVote || shouldAdd && userVote) {
+        return res.status(500).send('Access denied');
+      }
+      if (shouldAdd && !userVote) {
+        await UserVote.findOneAndUpdate(
+          { userId, bookId },
+          { added: timestamp, count: 1 },
+          { upsert: true }
+        );
+        const book = await Book.findOneAndUpdate(
           { _id: bookId },
           {
             $inc: {
@@ -113,21 +61,20 @@ const updateBookVotes = async (req, res) => {
           },
           { new: true }
         ).select({ votesCount: 1 });
-      }
-    } else {
-      await UserVote.deleteOne({ bookId, userId });
-      updatedBook = await Book.findOneAndUpdate(
-        { _id: bookId },
-        {
-          $inc: {
-            votesCount: -1
-          }
-        },
-        { new: true }
-      ).select({ votesCount: 1 });
-      if (!updatedBook) {
-        updatedBook = await CustomBook.findOneAndUpdate(
+        const customBook = await CustomBook.findOneAndUpdate(
           { _id: bookId },
+          {
+            $inc: {
+              votesCount: 1
+            }
+          },
+          { new: true }
+        ).select({ votesCount: 1 });
+        updatedBook = book || customBook;
+      } else if (!shouldAdd && userVote) {
+        await UserVote.deleteOne({ bookId, userId });
+        const book = await Book.findOneAndUpdate(
+          { _id: bookId, votesCount: { $gte: 1 } },
           {
             $inc: {
               votesCount: -1
@@ -135,13 +82,25 @@ const updateBookVotes = async (req, res) => {
           },
           { new: true }
         ).select({ votesCount: 1 });
+        const customBook = await CustomBook.findOneAndUpdate(
+          { _id: bookId, votesCount: { $gte: 1 } },
+          {
+            $inc: {
+              votesCount: -1
+            }
+          },
+          { new: true }
+        ).select({ votesCount: 1 });
+        updatedBook = book || customBook;
       }
+      const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
+      return res.send({ votesCount: updatedBook?.votesCount || 0, userVotes });
+    } catch (err) {
+      console.log(err, 'err');
+      return res.status(500).send('Something went wrong');
     }
-    const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
-    res.send({ votesCount: updatedBook.votesCount, userVotes });
-  } catch (err) {
-    console.log(err, 'err');
-    return res.status(500).send('Something went wrong');
+  } else {
+    return res.status(500).send({ errors: result.array({ onlyFirstError: true }) });
   }
 };
 
@@ -154,29 +113,34 @@ const updateUserBook = async (req, res) => {
     return res.status(500).send('Must provide user id');
   }
 
-  if (!bookId) {
-    return res.status(500).send('Must provide book id');
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const response = {};
+      if (bookStatus === 'all') {
+        await UserBook.deleteOne({ bookId, userId });
+        return res.send({ status: 'ok' });
+      } else {
+        const currentDate = new Date();
+        const timestamp = currentDate.getTime();
+        const data = await UserBook.findOneAndUpdate(
+          { userId, bookId },
+          { bookStatus, added: timestamp },
+          { upsert: true, new: true }
+        );
+        response.bookStatus = data.bookStatus;
+        response.added = data.added;
+      }
+      return res.send(response);
+    } catch (err) {
+      console.log(err, 'err');
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
   }
 
-  try {
-    const response = {};
-    if (bookStatus === 'all') {
-      await UserBook.deleteOne({ bookId, userId });
-    } else {
-      const currentDate = new Date();
-      const timestamp = currentDate.getTime();
-      const data = await UserBook.findOneAndUpdate(
-        { userId, bookId },
-        { bookStatus, added: timestamp },
-        { upsert: true, new: true }
-      );
-      response.bookStatus = data.bookStatus;
-      response.added = data.added;
-    }
-    res.send(response);
-  } catch (err) {
-    return res.status(500).send('Something went wrong');
-  }
+  
 };
 
-module.exports = { getBook, getBooksList, updateUserBook, updateBookVotes };
+module.exports = { getBook, updateUserBook, updateBookVotes };

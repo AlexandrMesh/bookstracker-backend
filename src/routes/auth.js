@@ -1,18 +1,13 @@
 const express = require('express');
-const { checkAuth, signUp, signIn, resetPassword, verifyResetPasswordCode, setNewPassword } = require('../controllers/auth');
+const { checkAuth, signUp, signIn } = require('../controllers/auth');
+const { checkAuthValidator, signUpValidator } = require('../validators/auth');
 
 const router = express.Router();
 
-router.get('/checkAuth', checkAuth);
+router.get('/checkAuth', checkAuthValidator, checkAuth);
 
-router.post('/signUp', signUp);
+router.post('/signUp', signUpValidator, signUp);
 
 router.post('/signIn', signIn);
-
-router.post('/resetPassword', resetPassword);
-
-router.post('/verifyResetPasswordCode', verifyResetPasswordCode);
-
-router.post('/setNewPassword', setNewPassword);
 
 module.exports = router;
