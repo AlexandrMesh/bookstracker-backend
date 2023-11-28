@@ -2,6 +2,13 @@
 
 ## bookdesk
 
+## 1.7.0
+
+###### 2023-11-28
+
+- [New] Added express-validator, helmet, rate-limiter
+- [Fix] Bumped up packages versions
+
 ## 1.6.0
 
 ###### 2023-11-24
