@@ -44,7 +44,7 @@ const checkAuth = async (req, res) => {
 };
 
 const signUp = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, location } = req.body;
   const lowerCasedEmail = email.toLowerCase();
 
   const result = validationResult(req);
@@ -62,7 +62,7 @@ const signUp = async (req, res) => {
     const currentDate = new Date();
     const registered = currentDate.getTime();
 
-    const user = new User({ email: lowerCasedEmail, password, registered });
+    const user = new User({ email: lowerCasedEmail, password, registered, location });
     await user.save();
 
     const appInfo = await App.find({});
@@ -71,7 +71,6 @@ const signUp = async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
     return res.send({ token, profile, version, googlePlayUrl });
   } catch (err) {
-    console.log(err, 'err');
     return res.status(500).send({
       fieldName: 'other',
       key: 'somethingWentWrong',
@@ -84,7 +83,7 @@ const signUp = async (req, res) => {
 };
 
 const signIn = async (req, res) => {
-  const { email, password, googleToken } = req.body;
+  const { email, password, googleToken, location } = req.body;
   const lowerCasedEmail = email.toLowerCase();
 
   if (googleToken) {
@@ -105,7 +104,7 @@ const signIn = async (req, res) => {
       const currentDate = new Date();
       const registered = currentDate.getTime();
       if (!user) {
-        const newUser = new User({ email: lowerCasedEmail, password: googleToken, registered });
+        const newUser = new User({ email: lowerCasedEmail, password: googleToken, registered, location });
         await newUser.save();
         userId = newUser._id;
         profile = { _id: newUser._id, email: newUser.email, registered: newUser.registered }

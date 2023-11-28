@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  location: String,
   resetPassword: {
     hashCode: String,
     expire_timestamp: Number,
@@ -18,7 +19,7 @@ const userSchema = new mongoose.Schema({
     verified: Boolean
   },
   registered: Number,
-  updated: Number
+  updated: Number,
 });
 
 userSchema.pre('save', function(next) {
