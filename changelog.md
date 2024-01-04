@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.8.0
+
+###### 2024-01-04
+
+- [New] Added endpoint for updating book added value
+
 ## 1.7.0
 
 ###### 2023-11-28

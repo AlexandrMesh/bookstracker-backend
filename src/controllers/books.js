@@ -104,6 +104,32 @@ const updateBookVotes = async (req, res) => {
   }
 };
 
+const updateUserBookAddedValue = async (req, res) => {
+  const { bookId, date } = req.body;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const { added } = await UserBook.findOneAndUpdate(
+        { userId, bookId },
+        { added: date },
+        { upsert: true, new: true }
+      );
+      return res.send({ added });
+    } catch (err) {
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
 const updateUserBook = async (req, res) => {
   const { bookId, bookStatus } = req.body;
   
@@ -143,4 +169,4 @@ const updateUserBook = async (req, res) => {
   
 };
 
-module.exports = { getBook, updateUserBook, updateBookVotes };
+module.exports = { getBook, updateUserBook, updateBookVotes, updateUserBookAddedValue };

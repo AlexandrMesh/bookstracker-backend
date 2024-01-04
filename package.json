@@ -1,6 +1,6 @@
 {
-  "name": "bookstracker-backend",
-  "version": "1.7.0",
+  "name": "bookdesk-backend",
+  "version": "1.8.0",
   "private": true,
   "scripts": {
     "start": "node ./bin/www",

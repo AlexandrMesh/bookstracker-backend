@@ -52,6 +52,11 @@ const updateUserBookValidator = [
   body('bookStatus', 'Must be one of value: all, planned, inProgress, completed').isIn(['all', 'planned', 'inProgress', 'completed'])
 ];
 
+const updateUserBookAddedValueValidator = [
+  body(['bookId', 'date'], 'Must be non-empty').notEmpty(),
+  body('date', 'Must be a Number').isNumeric()
+];
+
 const updateBookVotesValidator = [
   body(['bookId', 'shouldAdd'], 'Must be non-empty').notEmpty(),
   body('shouldAdd', 'Must be a boolean').isBoolean(),
@@ -67,4 +72,4 @@ const getBooksValidator = [
   query('categoryPaths', 'Must be an array').optional().isArray(),
 ];
 
-module.exports = { getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateBookVotesValidator, getBooksValidator };
+module.exports = { getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };
