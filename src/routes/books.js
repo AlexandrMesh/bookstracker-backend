@@ -30,6 +30,7 @@ router.get('/', getBooksValidator, async (req, res) => {
   let result;
 
   if (boardType !== 'all') {
+
     result = await UserBook.aggregate([
       { $sort : { [sortType]: sortDirection } },
       { $limit : 10000 },

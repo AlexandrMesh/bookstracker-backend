@@ -24,6 +24,10 @@ const getCoversListValidator = [
   query('bookName', 'Must not contain: @^&/#+$~%;~`*<>=%[]{}_|').custom(value => !(/[@^&/\\#+$~%;~`*<>=%[\]{}_|]/g.test(value)))
 ];
 
+const getBooksCountByYearValidator = [
+  query('boardType', 'Must be one of value: all, planned, inProgress, completed').isIn(['all', 'planned', 'inProgress', 'completed'])
+];
+
 const addCustomBookValidator = [
   body(['title', 'authorsList.*', 'categoryPath', 'coverPath', 'authorsList', 'annotation', 'pages', 'status', 'language'], 'Must be non-empty').notEmpty(),
   body(['title', 'authorsList.*', 'categoryPath', 'coverPath', 'annotation', 'status', 'language'], 'Must be a String').trim().isString(),
@@ -66,10 +70,10 @@ const updateBookVotesValidator = [
 const getBooksValidator = [
   query('boardType', 'Must be one of value: all, planned, inProgress, completed').isIn(['all', 'planned', 'inProgress', 'completed']),
   query('language', 'Must be one of value: ru, en').isIn(['ru', 'en']),
-  query('limit', 'Must equal 50').isIn([10, '10', '50', 50]),
+  query('limit', 'Must equal 10 or 50').isIn([2, '2', 5, '5', 10, '10', '50', 50]),
   query('exact', 'Must be boolean').optional().isBoolean(),
   query(['title', 'sortType', 'sortDirection', 'categoryPaths.*'], 'Must not contain: @^&/#+$~%;~`*<>=%[]{}_|').optional().custom(value => !(/[@^&/\\#+$~%;~`*<>=%[\]{}_|]/g.test(value))),
   query('categoryPaths', 'Must be an array').optional().isArray(),
 ];
 
-module.exports = { getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };
+module.exports = { getBooksCountByYearValidator, getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };

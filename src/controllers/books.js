@@ -1,9 +1,41 @@
 const mongoose = require('mongoose');
 const { validationResult } = require('express-validator');
+const groupBy = require('lodash/groupBy');
+const map = require('lodash/map');
 const Book = mongoose.model('Book');
 const CustomBook = mongoose.model('CustomBook');
 const UserBook = mongoose.model('UserBook');
 const UserVote = mongoose.model('UserVote');
+
+const getBooksCountByYear = async (req, res) => {
+  const { boardType } = req.query;
+
+  const userId = res.locals.userId;
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const userBooks = await UserBook.find({ userId, bookStatus: boardType });
+      const booksCountByYear = map(
+        groupBy(
+          userBooks.map((item) => ({ ...item, year: new Date(item?.added)?.getFullYear() })),
+          'year',
+        ),
+        (value, key) => {
+          return {
+            year: key,
+            count: value.length,
+          };
+        },
+      );
+      res.send(booksCountByYear);
+    } catch (err) {
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
 
 const getBook = async (req, res) => {
   const { bookId, bookDetails } = req.query;
@@ -169,4 +201,4 @@ const updateUserBook = async (req, res) => {
   
 };
 
-module.exports = { getBook, updateUserBook, updateBookVotes, updateUserBookAddedValue };
+module.exports = { getBooksCountByYear, getBook, updateUserBook, updateBookVotes, updateUserBookAddedValue };
