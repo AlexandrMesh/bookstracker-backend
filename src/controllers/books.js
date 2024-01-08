@@ -8,17 +8,30 @@ const UserBook = mongoose.model('UserBook');
 const UserVote = mongoose.model('UserVote');
 
 const getBooksCountByYear = async (req, res) => {
-  const { boardType } = req.query;
+  const { boardType, language } = req.query;
 
   const userId = res.locals.userId;
 
   const result = validationResult(req);
   if (result.isEmpty()) {
     try {
-      const userBooks = await UserBook.find({ userId, bookStatus: boardType });
+      const userBooks = await UserBook.aggregate([
+        { $limit : 10000 },
+        { $facet: {
+          items: [
+            { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
+            { $lookup: { from: 'custombooks', localField: 'bookId', foreignField: '_id', as: 'customBookDetails' } },
+            { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
+            { $project: { customBookDetails: { language: 1 }, bookDetails: { language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
+            { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
+            { $project: { bookDetails: 0, customBookDetails: 0 } },
+            { $match : { language } }
+          ]
+        }}
+      ], { allowDiskUse : true });
       const booksCountByYear = map(
         groupBy(
-          userBooks.map((item) => ({ ...item, year: new Date(item?.added)?.getFullYear() })),
+          userBooks[0]?.items.map((item) => ({ ...item, year: new Date(item?.added)?.getFullYear() })),
           'year',
         ),
         (value, key) => {

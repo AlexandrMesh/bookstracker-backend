@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.8.1
+
+###### 2024-01-08
+
+- [Fix] `getBooksCountByYear` endpoint language fixes
+
 ## 1.8.0
 
 ###### 2024-01-04
