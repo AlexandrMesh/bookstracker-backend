@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
   },
   registered: Number,
   updated: Number,
+  lastLoggedIn: Number
 });
 
 userSchema.pre('save', function(next) {

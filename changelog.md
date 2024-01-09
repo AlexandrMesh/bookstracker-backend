@@ -2,6 +2,13 @@
 
 ## bookdesk
 
+## 1.8.2
+
+###### 2024-01-09
+
+- [New] Added logic for saving `lastLoggedIn` value for user
+- [Fix] Improvements with `Promise.all`
+
 ## 1.8.1
 
 ###### 2024-01-08

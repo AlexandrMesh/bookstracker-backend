@@ -19,10 +19,17 @@ const checkAuth = async (req, res) => {
     try {
       const { userId } = jwt.verify(token, process.env.SECRET_KEY);
       try {
-        const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
-        const { version, googlePlayUrl } = appInfo[0] || {};
-        const { _id, email, registered, updated } = await User.findById(userId);
-        const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
+        const currentDate = new Date();
+        const lastLoggedIn = currentDate.getTime();
+        const result = await Promise.all([
+          App.find({}).select({ version: 1, googlePlayUrl: 1 }),
+          User.findOneAndUpdate({ _id: userId }, { lastLoggedIn }),
+          UserVote.find({ userId }).select({ bookId: 1, count: 1 })
+        ]);
+        const { version, googlePlayUrl } = result[0] || {};
+        const { _id, email, registered, updated } = result[1] || {};
+        const userVotes = result[2] || 0;
+
         res.send({ profile: { _id, email, registered, updated }, version, googlePlayUrl, userVotes });
       } catch (err) {
         return res.status(500).send({
