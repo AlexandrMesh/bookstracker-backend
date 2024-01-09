@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.8.3
+
+###### 2024-01-09
+
+- [Fix] Add `countByYear` logic into update user book endpoints
+
 ## 1.8.2
 
 ###### 2024-01-09

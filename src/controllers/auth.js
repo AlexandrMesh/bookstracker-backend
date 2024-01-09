@@ -26,7 +26,7 @@ const checkAuth = async (req, res) => {
           User.findOneAndUpdate({ _id: userId }, { lastLoggedIn }),
           UserVote.find({ userId }).select({ bookId: 1, count: 1 })
         ]);
-        const { version, googlePlayUrl } = result[0] || {};
+        const { version, googlePlayUrl } = result[0][0] || {};
         const { _id, email, registered, updated } = result[1] || {};
         const userVotes = result[2] || 0;
 

@@ -7,6 +7,41 @@ const CustomBook = mongoose.model('CustomBook');
 const UserBook = mongoose.model('UserBook');
 const UserVote = mongoose.model('UserVote');
 
+const getCountByYear = async (userId, boardType, language) => {
+  try {
+    const userBooks = await UserBook.aggregate([
+      { $limit : 10000 },
+      { $facet: {
+        items: [
+          { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
+          { $lookup: { from: 'custombooks', localField: 'bookId', foreignField: '_id', as: 'customBookDetails' } },
+          { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
+          { $project: { customBookDetails: { language: 1 }, bookDetails: { language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
+          { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
+          { $project: { bookDetails: 0, customBookDetails: 0 } },
+          { $match : { language } }
+        ]
+      }}
+    ], { allowDiskUse : true });
+    const booksCountByYear = map(
+      groupBy(
+        userBooks[0]?.items.map((item) => ({ ...item, year: new Date(item?.added)?.getFullYear() })),
+        'year',
+      ),
+      (value, key) => {
+        return {
+          year: key,
+          count: value.length,
+        };
+      },
+    );
+    console.log(booksCountByYear, 'booksCountByYear');
+    return booksCountByYear;
+  } catch (err) {
+    return 'Something went wrong';
+  }
+}
+
 const getBooksCountByYear = async (req, res) => {
   const { boardType, language } = req.query;
 
@@ -15,34 +50,9 @@ const getBooksCountByYear = async (req, res) => {
   const result = validationResult(req);
   if (result.isEmpty()) {
     try {
-      const userBooks = await UserBook.aggregate([
-        { $limit : 10000 },
-        { $facet: {
-          items: [
-            { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
-            { $lookup: { from: 'custombooks', localField: 'bookId', foreignField: '_id', as: 'customBookDetails' } },
-            { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
-            { $project: { customBookDetails: { language: 1 }, bookDetails: { language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
-            { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
-            { $project: { bookDetails: 0, customBookDetails: 0 } },
-            { $match : { language } }
-          ]
-        }}
-      ], { allowDiskUse : true });
-      const booksCountByYear = map(
-        groupBy(
-          userBooks[0]?.items.map((item) => ({ ...item, year: new Date(item?.added)?.getFullYear() })),
-          'year',
-        ),
-        (value, key) => {
-          return {
-            year: key,
-            count: value.length,
-          };
-        },
-      );
-      res.send(booksCountByYear);
-    } catch (err) {
+      const result = await getCountByYear(userId, boardType, language);
+      return res.send(result);
+    } catch (error) {
       return res.status(500).send('Something went wrong');
     }
   } else {
@@ -150,7 +160,7 @@ const updateBookVotes = async (req, res) => {
 };
 
 const updateUserBookAddedValue = async (req, res) => {
-  const { bookId, date } = req.body;
+  const { bookId, date, language, boardType } = req.body;
   
   const userId = res.locals.userId;
 
@@ -166,7 +176,8 @@ const updateUserBookAddedValue = async (req, res) => {
         { added: date },
         { upsert: true, new: true }
       );
-      return res.send({ added });
+      const countByYear = await getCountByYear(userId, boardType, language);
+      return res.send({ added, countByYear });
     } catch (err) {
       return res.status(500).send('Something went wrong');
     }
@@ -176,7 +187,7 @@ const updateUserBookAddedValue = async (req, res) => {
 };
 
 const updateUserBook = async (req, res) => {
-  const { bookId, bookStatus } = req.body;
+  const { bookId, bookStatus, language, boardType } = req.body;
   
   const userId = res.locals.userId;
 
@@ -202,6 +213,7 @@ const updateUserBook = async (req, res) => {
         response.bookStatus = data.bookStatus;
         response.added = data.added;
       }
+      response.countByYear = await getCountByYear(userId, boardType, language);
       return res.send(response);
     } catch (err) {
       console.log(err, 'err');
