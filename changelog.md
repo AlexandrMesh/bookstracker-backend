@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.8.4
+
+###### 2024-01-10
+
+- [Fix] Add `added` query param to `updateUserBook` endpoint
+
 ## 1.8.3
 
 ###### 2024-01-09

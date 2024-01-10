@@ -187,7 +187,7 @@ const updateUserBookAddedValue = async (req, res) => {
 };
 
 const updateUserBook = async (req, res) => {
-  const { bookId, bookStatus, language, boardType } = req.body;
+  const { bookId, bookStatus, added, language, boardType } = req.body;
   
   const userId = res.locals.userId;
 
@@ -203,11 +203,9 @@ const updateUserBook = async (req, res) => {
         await UserBook.deleteOne({ bookId, userId });
         return res.send({ status: 'ok' });
       } else {
-        const currentDate = new Date();
-        const timestamp = currentDate.getTime();
         const data = await UserBook.findOneAndUpdate(
           { userId, bookId },
-          { bookStatus, added: timestamp },
+          { bookStatus, added },
           { upsert: true, new: true }
         );
         response.bookStatus = data.bookStatus;
