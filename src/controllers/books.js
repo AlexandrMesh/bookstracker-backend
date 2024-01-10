@@ -201,7 +201,8 @@ const updateUserBook = async (req, res) => {
       const response = {};
       if (bookStatus === 'all') {
         await UserBook.deleteOne({ bookId, userId });
-        return res.send({ status: 'ok' });
+        const countByYear = await getCountByYear(userId, boardType, language);
+        return res.send({ countByYear });
       } else {
         const data = await UserBook.findOneAndUpdate(
           { userId, bookId },
