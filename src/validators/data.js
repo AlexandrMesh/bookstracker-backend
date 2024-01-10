@@ -53,7 +53,7 @@ const addCustomBookValidator = [
 const updateUserBookValidator = [
   body(['bookId', 'bookStatus'], 'Must be non-empty').notEmpty(),
   body('bookId', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
-  body('added', 'Must be an Unix time').isNumeric(),
+  body('added', 'Must be an Unix time').optional().isNumeric(),
   body('bookStatus', 'Must be one of value: all, planned, inProgress, completed').isIn(['all', 'planned', 'inProgress', 'completed'])
 ];
 

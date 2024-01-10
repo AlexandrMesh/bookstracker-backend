@@ -205,7 +205,7 @@ const updateUserBook = async (req, res) => {
       } else {
         const data = await UserBook.findOneAndUpdate(
           { userId, bookId },
-          { bookStatus, added },
+          { bookStatus, added: added || new Date().getTime() },
           { upsert: true, new: true }
         );
         response.bookStatus = data.bookStatus;
