@@ -6,6 +6,7 @@ const Book = mongoose.model('Book');
 const CustomBook = mongoose.model('CustomBook');
 const UserBook = mongoose.model('UserBook');
 const UserVote = mongoose.model('UserVote');
+const UserComment = mongoose.model('UserComment');
 
 const getCountByYear = async (userId, boardType, language) => {
   try {
@@ -35,7 +36,6 @@ const getCountByYear = async (userId, boardType, language) => {
         };
       },
     );
-    console.log(booksCountByYear, 'booksCountByYear');
     return booksCountByYear;
   } catch (err) {
     return 'Something went wrong';
@@ -69,8 +69,9 @@ const getBook = async (req, res) => {
   if (result.isEmpty()) {
     try {
       const book = await UserBook.findOne({ userId, bookId }) || {};
+      const comment = await UserComment.findOne({ userId, bookId }).select({ comment, added });
       if (book.bookStatus) {
-        res.send({ ...bookDetails, bookStatus: book.bookStatus, added: book.added });
+        res.send({ ...bookDetails, bookStatus: book.bookStatus, added: book.added, ...(comment && { comment: comment.comment, commentAdded: comment.added })});
       } else {
         res.send(bookDetails);
       }
@@ -215,14 +216,37 @@ const updateUserBook = async (req, res) => {
       response.countByYear = await getCountByYear(userId, boardType, language);
       return res.send(response);
     } catch (err) {
-      console.log(err, 'err');
       return res.status(500).send('Something went wrong');
     }
   } else {
     res.send({ errors: result.array({ onlyFirstError: true }) });
   }
-
-  
 };
 
-module.exports = { getBooksCountByYear, getBook, updateUserBook, updateBookVotes, updateUserBookAddedValue };
+const updateUserComment = async (req, res) => {
+  const { bookId, added, comment } = req.body;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const response = await UserComment.findOneAndUpdate(
+        { userId, bookId },
+        { comment, added },
+        { upsert: true, new: true }
+      ).select({ comment, added });;
+      return res.send(response);
+    } catch (err) {
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
+module.exports = { getBooksCountByYear, getBook, updateUserBook, updateUserComment, updateBookVotes, updateUserBookAddedValue };

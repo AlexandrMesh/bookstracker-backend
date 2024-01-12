@@ -1,7 +1,7 @@
 const express = require('express');
-const { getBook, updateUserBook, updateBookVotes, updateUserBookAddedValue, getBooksCountByYear } = require('../controllers/books');
+const { getBook, updateUserBook, updateBookVotes, updateUserBookAddedValue, updateUserComment, getBooksCountByYear } = require('../controllers/books');
 const { getCoversList, addCustomBook } = require('../controllers/customBooks');
-const { getBooksCountByYearValidator, getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserBookAddedValueValidator, updateBookVotesValidator } = require('../validators/data');
+const { getBooksCountByYearValidator, getBookValidator, updateUserCommentValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserBookAddedValueValidator, updateBookVotesValidator } = require('../validators/data');
 
 const router = express.Router();
 
@@ -12,6 +12,8 @@ router.post('/addCustomBook', addCustomBookValidator, addCustomBook);
 router.post('/updateUserBook', updateUserBookValidator, updateUserBook);
 router.post('/updateBookVotes', updateBookVotesValidator, updateBookVotes);
 router.post('/updateUserBookAddedValue', updateUserBookAddedValueValidator, updateUserBookAddedValue);
+router.post('/updateUserComment', updateUserCommentValidator, updateUserComment);
+
 
 
 module.exports = router;

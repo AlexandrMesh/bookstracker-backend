@@ -4,6 +4,7 @@ require('./src/models/User');
 require('./src/models/Book');
 require('./src/models/CustomBook');
 require('./src/models/UserBook');
+require('./src/models/UserComment');
 require('./src/models/UserVote');
 require('./src/models/App');
 require('./src/models/Category');
