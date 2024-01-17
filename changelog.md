@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.9.0
+
+###### 2024-01-17
+
+- [New] Add `updateUserComment`, `getUserBookComment`, `deleteUserComment`
+
 ## 1.8.4
 
 ###### 2024-01-10
