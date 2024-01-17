@@ -60,6 +60,25 @@ const getBooksCountByYear = async (req, res) => {
   }
 };
 
+
+const getUserBookComment = async (req, res) => {
+  const { bookId } = req.query;
+  const userId = res.locals.userId;
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const result = await UserComment.findOne({ userId, bookId }).select({ bookId: 1, comment: 1, added: 1 });
+      return res.send(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
 const getBook = async (req, res) => {
   const { bookId, bookDetails } = req.query;
 
@@ -69,7 +88,7 @@ const getBook = async (req, res) => {
   if (result.isEmpty()) {
     try {
       const book = await UserBook.findOne({ userId, bookId }) || {};
-      const comment = await UserComment.findOne({ userId, bookId }).select({ comment, added });
+      const comment = await UserComment.findOne({ userId, bookId }).select({ comment: 1, added: 1 });
       if (book.bookStatus) {
         res.send({ ...bookDetails, bookStatus: book.bookStatus, added: book.added, ...(comment && { comment: comment.comment, commentAdded: comment.added })});
       } else {
@@ -249,4 +268,26 @@ const updateUserComment = async (req, res) => {
   }
 };
 
-module.exports = { getBooksCountByYear, getBook, updateUserBook, updateUserComment, updateBookVotes, updateUserBookAddedValue };
+const deleteUserComment = async (req, res) => {
+  const { bookId } = req.body;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      await UserComment.deleteOne({ bookId, userId });
+      return res.send({ status: 'ok' });
+    } catch (err) {
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
+module.exports = { getBooksCountByYear, getBook, updateUserBook, deleteUserComment, getUserBookComment, updateUserComment, updateBookVotes, updateUserBookAddedValue };

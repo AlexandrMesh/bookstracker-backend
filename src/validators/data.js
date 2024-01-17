@@ -65,7 +65,16 @@ const updateUserCommentValidator = [
 
 const updateUserBookAddedValueValidator = [
   body(['bookId', 'date'], 'Must be non-empty').notEmpty(),
+  body('bookId', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
   body('date', 'Must be an Unix time').isNumeric()
+];
+
+const getUserBookCommentValidator = [
+  query('bookId', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
+];
+
+const deleteUserCommentValidator = [
+  body('bookId', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
 ];
 
 const updateBookVotesValidator = [
@@ -83,4 +92,4 @@ const getBooksValidator = [
   query('categoryPaths', 'Must be an array').optional().isArray(),
 ];
 
-module.exports = { getBooksCountByYearValidator, getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserCommentValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };
+module.exports = { getBooksCountByYearValidator, deleteUserCommentValidator, getUserBookCommentValidator, getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserCommentValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };
