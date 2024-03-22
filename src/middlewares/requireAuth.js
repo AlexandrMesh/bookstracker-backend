@@ -14,7 +14,7 @@ module.exports = (req, res, next) => {
   }
 
   const token = authorization.replace('Bearer ', '');
-  jwt.verify(token, process.env.SECRET_KEY, async (err, payload) => {
+  jwt.verify(token, 'I_LIKE_READING_BOOKS_209', async (err, payload) => {
     if (err) {
       return res.status(401).send({
         key: 'notLoggedIn',

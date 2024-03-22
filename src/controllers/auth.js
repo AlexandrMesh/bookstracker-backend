@@ -17,7 +17,7 @@ const checkAuth = async (req, res) => {
   const result = validationResult(req);
   if (result.isEmpty()) {
     try {
-      const { userId } = jwt.verify(token, process.env.SECRET_KEY);
+      const { userId } = jwt.verify(token, 'I_LIKE_READING_BOOKS_209');
       try {
         const currentDate = new Date();
         const lastLoggedIn = currentDate.getTime();
@@ -75,7 +75,7 @@ const signUp = async (req, res) => {
     const appInfo = await App.find({});
     const { version, googlePlayUrl } = appInfo[0] || {};
     const profile = { _id: user._id, email: user.email, registered: user.registered }
-    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
+    const token = jwt.sign({ userId: user._id }, 'I_LIKE_READING_BOOKS_209');
     return res.send({ token, profile, version, googlePlayUrl });
   } catch (err) {
     return res.status(500).send({
@@ -119,7 +119,7 @@ const signIn = async (req, res) => {
         userId = user._id;
         profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated }
       }
-      const token = jwt.sign({ userId }, process.env.SECRET_KEY);
+      const token = jwt.sign({ userId }, 'I_LIKE_READING_BOOKS_209');
       const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
       const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
       const { version, googlePlayUrl } = appInfo[0] || {};
@@ -168,7 +168,7 @@ const signIn = async (req, res) => {
     }
     await user.comparePassword(password);
     const userVotes = await UserVote.find({ userId: user._id }).select({ bookId: 1, count: 1 });
-    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY);
+    const token = jwt.sign({ userId: user._id }, 'I_LIKE_READING_BOOKS_209');
     profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated }
     const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
     const { version, googlePlayUrl } = appInfo[0] || {};

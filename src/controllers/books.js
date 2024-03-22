@@ -7,6 +7,7 @@ const CustomBook = mongoose.model('CustomBook');
 const UserBook = mongoose.model('UserBook');
 const UserVote = mongoose.model('UserVote');
 const UserComment = mongoose.model('UserComment');
+const UserBookRating = mongoose.model('UserBookRating');
 
 const getCountByYear = async (userId, boardType, language) => {
   try {
@@ -79,6 +80,24 @@ const getUserBookComment = async (req, res) => {
   }
 };
 
+const getUserBookRating = async (req, res) => {
+  const { bookId } = req.query;
+  const userId = res.locals.userId;
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const result = await UserBookRating.findOne({ userId, bookId }).select({ bookId: 1, rating: 1, added: 1 });
+      return res.send(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
 const getBook = async (req, res) => {
   const { bookId, bookDetails } = req.query;
 
@@ -89,8 +108,9 @@ const getBook = async (req, res) => {
     try {
       const book = await UserBook.findOne({ userId, bookId }) || {};
       const comment = await UserComment.findOne({ userId, bookId }).select({ comment: 1, added: 1 });
+      const rating = await UserBookRating.findOne({ userId, bookId }).select({ rating: 1, added: 1 });
       if (book.bookStatus) {
-        res.send({ ...bookDetails, bookStatus: book.bookStatus, added: book.added, ...(comment && { comment: comment.comment, commentAdded: comment.added })});
+        res.send({ ...bookDetails, bookStatus: book.bookStatus, added: book.added, ...(comment && { comment: comment.comment, commentAdded: comment.added }), ...(rating && { rating: rating.rating, ratingAdded: rating.added })});
       } else {
         res.send(bookDetails);
       }
@@ -268,6 +288,32 @@ const updateUserComment = async (req, res) => {
   }
 };
 
+const updateUserBookRating = async (req, res) => {
+  const { bookId, added, rating } = req.body;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const response = await UserBookRating.findOneAndUpdate(
+        { userId, bookId },
+        { rating, added },
+        { upsert: true, new: true }
+      ).select({ rating, added });;
+      return res.send(response);
+    } catch (err) {
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
 const deleteUserComment = async (req, res) => {
   const { bookId } = req.body;
   
@@ -290,4 +336,4 @@ const deleteUserComment = async (req, res) => {
   }
 };
 
-module.exports = { getBooksCountByYear, getBook, updateUserBook, deleteUserComment, getUserBookComment, updateUserComment, updateBookVotes, updateUserBookAddedValue };
+module.exports = { getBooksCountByYear, getBook, updateUserBook, updateUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue };
