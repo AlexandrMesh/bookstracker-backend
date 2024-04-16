@@ -9,6 +9,8 @@ require('./src/models/UserBookRating');
 require('./src/models/UserVote');
 require('./src/models/App');
 require('./src/models/Category');
+require('./src/models/UserGoal');
+require('./src/models/UserGoalItem');
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
@@ -32,6 +34,7 @@ const books = require('./src/routes/books');
 const data = require('./src/routes/data');
 const appInfo = require('./src/routes/appInfo');
 const categories = require('./src/routes/categories');
+const goals = require('./src/routes/goals');
 
 const app = express();
 
@@ -51,6 +54,7 @@ app.use(requireAuth, data);
 app.use('/', index);
 app.use('/books', requireAuth, books);
 app.use(requireAuth, categories);
+app.use(requireAuth, goals);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

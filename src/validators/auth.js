@@ -1,6 +1,4 @@
 const { query, body } = require('express-validator');
-const mongoose = require('mongoose');
-const User = mongoose.model('User');
 
 const checkAuthValidator = [
   query('token', 'Must be JWT').isJWT()
