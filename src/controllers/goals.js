@@ -9,7 +9,7 @@ const getUserGoalItems = async (req, res) => {
   const result = validationResult(req);
   if (result.isEmpty()) {
     try {
-      const result = await UserGoalItem.find({ userId });
+      const result = await UserGoalItem.find({ userId }).select({ _id: 1, added_at: 1, pages: 1 });
       res.send(result);
     } catch (err) {
       return res.status(500).send({
@@ -33,7 +33,8 @@ const addUserGoalItem = async (req, res) => {
     try {
       const userGoalItem = new UserGoalItem({ userId, pages, added_at });
       await userGoalItem.save();
-      res.send({ status: 'ok' });
+      const result = await UserGoalItem.find({ userId }).select({ _id: 1, added_at: 1, pages: 1 });
+      res.send(result);
     } catch (err) {
       return res.status(500).send({
         fieldName: 'other',
