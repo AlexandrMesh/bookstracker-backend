@@ -12,7 +12,6 @@ const UserBookRating = mongoose.model('UserBookRating');
 const getCountByYear = async (userId, boardType, language) => {
   try {
     const userBooks = await UserBook.aggregate([
-      { $limit : 10000 },
       { $facet: {
         items: [
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },

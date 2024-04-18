@@ -33,7 +33,6 @@ router.get('/', getBooksValidator, async (req, res) => {
 
     result = await UserBook.aggregate([
       { $sort : { [sortType]: sortDirection } },
-      { $limit : 10000 },
       { $facet: {
         items: [
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
