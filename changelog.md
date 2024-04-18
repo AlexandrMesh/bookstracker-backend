@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.2.0
+
+###### 2024-04-18
+
+- [New] Goals endpoints: `userGoalItems`, `addUserGoalItem`, `addUserGoal`, `updateUserGoal`
+
 ## 1.10.0
 
 ###### 2024-01-17
