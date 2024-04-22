@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.2.1
+
+###### 2024-04-22
+
+- [New] V2 endpoint for `booksCountByYear`
+
 ## 1.2.0
 
 ###### 2024-04-18
