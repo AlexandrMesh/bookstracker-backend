@@ -12,11 +12,11 @@ const UserBookRating = mongoose.model('UserBookRating');
 const getCountByYear = async (userId, boardType, language) => {
   try {
     const userBooks = await UserBook.aggregate([
+      { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
       { $facet: {
         items: [
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
           { $lookup: { from: 'custombooks', localField: 'bookId', foreignField: '_id', as: 'customBookDetails' } },
-          { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
           { $project: { customBookDetails: { language: 1 }, bookDetails: { language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0, customBookDetails: 0 } },
@@ -45,11 +45,11 @@ const getCountByYear = async (userId, boardType, language) => {
 const getCountByYearV2 = async (userId, boardType, language) => {
   try {
     const userBooks = await UserBook.aggregate([
+      { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
       { $facet: {
         items: [
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
           { $lookup: { from: 'custombooks', localField: 'bookId', foreignField: '_id', as: 'customBookDetails' } },
-          { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
           { $project: { customBookDetails: { language: 1 }, bookDetails: { language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0, customBookDetails: 0 } },
