@@ -32,12 +32,12 @@ router.get('/', getBooksValidator, async (req, res) => {
   if (boardType !== 'all') {
 
     result = await UserBook.aggregate([
+      { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
       { $sort : { [sortType]: sortDirection } },
       { $facet: {
         items: [
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
           { $lookup: { from: 'custombooks', localField: 'bookId', foreignField: '_id', as: 'customBookDetails' } },
-          { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
           { $project: { customBookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1, language: 1 }, bookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1, language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0, customBookDetails: 0 } },
@@ -48,7 +48,6 @@ router.get('/', getBooksValidator, async (req, res) => {
         pagination: [
           { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
           { $lookup: { from: 'custombooks', localField: 'bookId', foreignField: '_id', as: 'customBookDetails' } },
-          { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
           { $project: { customBookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1, language: 1 }, bookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1, language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0, customBookDetails: 0 } },

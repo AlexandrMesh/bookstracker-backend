@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const shortid = require('shortid');
+const crypto = require('crypto');
 const webp = require('webp-converter');
 const { validationResult } = require('express-validator');
 const CustomBook = mongoose.model('CustomBook');
@@ -69,7 +69,7 @@ const downloadImage = async (imageSrc, categoryPath) => {
       fs.mkdirSync(coversFolder);
     }
 
-    const imageTitle = `${categoryPath}_${shortid.generate()}`;
+    const imageTitle = `${categoryPath}_${crypto.randomBytes(10).toString('hex')}`;
     const _path = path.resolve(dirName, imagesFolderNamePrefix, `${imageTitle}.${getImageType(response.headers)}`);
     const writer = fs.createWriteStream(_path);
 
