@@ -1,7 +1,7 @@
 const express = require('express');
-const { getBook, updateUserBook, getUserBookComment, deleteUserComment, getBooksCountByYearV2, updateUserBookRating, getUserBookRating, updateBookVotes, updateUserBookAddedValue, updateUserComment, getBooksCountByYear } = require('../controllers/books');
+const { getBook, updateUserBook, getUserBookComment, deleteUserComment, getBooksCountByYearV2, deleteUserBookRating, updateUserBookRating, getUserBookRating, updateBookVotes, updateUserBookAddedValue, updateUserComment, getBooksCountByYear } = require('../controllers/books');
 const { getCoversList, addCustomBook } = require('../controllers/customBooks');
-const { getBooksCountByYearValidator, getUserBookRatingValidator, updateUserBookRatingValidator, deleteUserCommentValidator, getUserBookCommentValidator, getBookValidator, updateUserCommentValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserBookAddedValueValidator, updateBookVotesValidator } = require('../validators/data');
+const { getBooksCountByYearValidator, getUserBookRatingValidator, updateUserBookRatingValidator, deleteUserBookRatingValidator, deleteUserCommentValidator, getUserBookCommentValidator, getBookValidator, updateUserCommentValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserBookAddedValueValidator, updateBookVotesValidator } = require('../validators/data');
 
 const router = express.Router();
 
@@ -17,6 +17,7 @@ router.post('/updateBookVotes', updateBookVotesValidator, updateBookVotes);
 router.post('/updateUserBookAddedValue', updateUserBookAddedValueValidator, updateUserBookAddedValue);
 router.post('/updateUserComment', updateUserCommentValidator, updateUserComment);
 router.post('/updateUserBookRating', updateUserBookRatingValidator, updateUserBookRating);
+router.post('/deleteUserBookRating', deleteUserBookRatingValidator, deleteUserBookRating);
 router.post('/deleteUserComment', deleteUserCommentValidator, deleteUserComment);
 
 module.exports = router;

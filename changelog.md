@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.2.2
+
+###### 2024-04-22
+
+- [New] Added `deleteUserBookRating` endpoint
+
 ## 1.2.1
 
 ###### 2024-04-22

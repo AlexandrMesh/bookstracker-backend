@@ -363,6 +363,28 @@ const updateUserBookRating = async (req, res) => {
   }
 };
 
+const deleteUserBookRating = async (req, res) => {
+  const { bookId } = req.body;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      await UserBookRating.deleteOne({ bookId, userId });
+      return res.send({ status: 'ok' });
+    } catch (err) {
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
 const deleteUserComment = async (req, res) => {
   const { bookId } = req.body;
   
@@ -385,4 +407,4 @@ const deleteUserComment = async (req, res) => {
   }
 };
 
-module.exports = { getBooksCountByYear, getBook, updateUserBook, getBooksCountByYearV2, updateUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue };
+module.exports = { getBooksCountByYear, getBook, updateUserBook, getBooksCountByYearV2, updateUserBookRating, deleteUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue };
