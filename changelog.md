@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.3.0
+
+###### 2024-05-207
+
+- [New] Added `deleteUserGoalItem` endpoint
+
 ## 1.2.2
 
 ###### 2024-04-22

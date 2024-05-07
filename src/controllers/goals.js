@@ -47,6 +47,29 @@ const addUserGoalItem = async (req, res) => {
   }
 };
 
+const deleteUserGoalItem = async (req, res) => {
+  const { id } = req.body;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      await UserGoalItem.deleteOne({ _id: id, userId });
+      const result = await UserGoalItem.find({ userId }).select({ _id: 1, added_at: 1, pages: 1 });
+      return res.send(result);
+    } catch (err) {
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
 const addUserGoal = async (req, res) => {
   const { numberOfPages } = req.body;
 
@@ -93,4 +116,4 @@ const updateUserGoal = async (req, res) => {
   }
 };
 
-module.exports = { getUserGoalItems, addUserGoalItem, addUserGoal, updateUserGoal };
+module.exports = { getUserGoalItems, addUserGoalItem, deleteUserGoalItem, addUserGoal, updateUserGoal };

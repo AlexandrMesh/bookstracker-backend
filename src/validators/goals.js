@@ -15,4 +15,8 @@ const updateUserGoalValidator = [
   body('numberOfPages', 'Min length: 5, Max length: 1000').isInt({ min: 5, max: 1000})
 ];
 
-module.exports = { getUserGoalItemsValidator, addUserGoalItemValidator, addUserGoalValidator, updateUserGoalValidator };
+const deleteUserGoalItemValidator = [
+  body('id', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
+];
+
+module.exports = { getUserGoalItemsValidator, deleteUserGoalItemValidator ,addUserGoalItemValidator, addUserGoalValidator, updateUserGoalValidator };
