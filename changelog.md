@@ -4,13 +4,13 @@
 
 ## 1.4.0
 
-###### 2024-05-207
+###### 2024-06-04
 
 - [New] New api for connect to DB
 
 ## 1.3.0
 
-###### 2024-05-207
+###### 2024-05-27
 
 - [New] Added `deleteUserGoalItem` endpoint
 
