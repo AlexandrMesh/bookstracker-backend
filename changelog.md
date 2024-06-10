@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.4.1
+
+###### 2024-06-10
+
+- [Fix] Performance improvements for loading books
+
 ## 1.4.0
 
 ###### 2024-06-04
