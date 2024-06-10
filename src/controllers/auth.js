@@ -23,17 +23,15 @@ const checkAuth = async (req, res) => {
         const currentDate = new Date();
         const lastLoggedIn = currentDate.getTime();
         const result = await Promise.all([
-          App.find({}).select({ version: 1, googlePlayUrl: 1 }),
           User.findOneAndUpdate({ _id: userId }, { lastLoggedIn }),
           UserVote.find({ userId }).select({ bookId: 1, count: 1 }),
           UserGoal.find({ userId }).select({ numberOfPages: 1 })
         ]);
-        const { version, googlePlayUrl } = result[0][0] || {};
-        const { _id, email, registered, updated } = result[1] || {};
-        const userVotes = result[2] || 0;
-        const { numberOfPages } = result[3][0] || 0;
+        const { _id, email, registered, updated } = result[0] || {};
+        const userVotes = result[1] || 0;
+        const { numberOfPages } = result[2][0] || 0;
 
-        res.send({ profile: { _id, email, registered, updated }, version, googlePlayUrl, userVotes, numberOfPagesForGoal: numberOfPages });
+        res.send({ profile: { _id, email, registered, updated }, userVotes, numberOfPagesForGoal: numberOfPages });
       } catch (err) {
         return res.status(500).send({
           fieldName: 'other',
@@ -75,11 +73,9 @@ const signUp = async (req, res) => {
     const user = new User({ email: lowerCasedEmail, password, registered, language });
     await user.save();
 
-    const appInfo = await App.find({});
-    const { version, googlePlayUrl } = appInfo[0] || {};
     const profile = { _id: user._id, email: user.email, registered: user.registered }
     const token = jwt.sign({ userId: user._id }, 'I_LIKE_READING_BOOKS_209');
-    return res.send({ token, profile, version, googlePlayUrl });
+    return res.send({ token, profile });
   } catch (err) {
     return res.status(500).send({
       fieldName: 'other',
@@ -126,11 +122,9 @@ const signIn = async (req, res) => {
       const lastLoggedIn = currentDate.getTime();
       await User.findOneAndUpdate({ _id: userId }, { lastLoggedIn });
       const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
-      const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
       const userGoal = await UserGoal.find({ userId }).select({ numberOfPages: 1 });
-      const { version, googlePlayUrl } = appInfo[0] || {};
       const { numberOfPages } = userGoal[0] || {};
-      return res.send({ token, profile, version, googlePlayUrl, userVotes, numberOfPagesForGoal: numberOfPages });
+      return res.send({ token, profile, userVotes, numberOfPagesForGoal: numberOfPages });
     } catch (e) {
       return res.status(500).send({
         fieldName: 'other',
@@ -180,11 +174,9 @@ const signIn = async (req, res) => {
     const currentDate = new Date();
     const lastLoggedIn = currentDate.getTime();
     await User.findOneAndUpdate({ _id: user._id }, { lastLoggedIn });
-    const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
     const userGoal = await UserGoal.find({ userId: user._id }).select({ numberOfPages: 1 });
-    const { version, googlePlayUrl } = appInfo[0] || {};
     const { numberOfPages } = userGoal[0] || {};
-    return res.send({ token, profile, userVotes, version, googlePlayUrl, numberOfPagesForGoal: numberOfPages });
+    return res.send({ token, profile, userVotes, numberOfPagesForGoal: numberOfPages });
   } catch (err) {
     console.log(err, 'err');
     return res.status(500).send({

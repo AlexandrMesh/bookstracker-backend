@@ -2,6 +2,18 @@
 
 ## bookdesk
 
+## 1.4.3
+
+###### 2024-06-10
+
+- [Fix] Removed unused underConstruction
+
+## 1.4.2
+
+###### 2024-06-10
+
+- [Fix] Performance improvements for loading books
+
 ## 1.4.0
 
 ###### 2024-06-04

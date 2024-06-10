@@ -20,22 +20,4 @@ const getAppInfo = async (req, res) => {
   }
 };
 
-const getUnderConstruction = async (req, res) => {
-  try {
-    try {
-      const result = await App.find({}).select({ underConstruction: 1, underConstructionEn: 1 });
-      const { underConstruction, underConstructionEn } = result[0] || {};
-      res.send({ underConstruction, underConstructionEn });
-    } catch (err) {
-      return res.status(500).send({
-        fieldName: 'other',
-        key: 'somethingWentWrong',
-        error: 'Something went wrong'
-      });
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-module.exports = { getAppInfo, getUnderConstruction };
+module.exports = { getAppInfo };
