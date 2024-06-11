@@ -265,7 +265,7 @@ const updateUserBookAddedValue = async (req, res) => {
         { added: date },
         { upsert: true, new: true }
       );
-      const countByYear = await getCountByYear(userId, boardType, language);
+      const countByYear = await getCountByYearV2(userId, boardType, language);
       return res.send({ added, countByYear });
     } catch (err) {
       return res.status(500).send('Something went wrong');
@@ -290,7 +290,7 @@ const updateUserBook = async (req, res) => {
       const response = {};
       if (bookStatus === 'all') {
         await UserBook.deleteOne({ bookId, userId });
-        const countByYear = await getCountByYear(userId, boardType, language);
+        const countByYear = await getCountByYearV2(userId, boardType, language);
         return res.send({ countByYear });
       } else {
         const data = await UserBook.findOneAndUpdate(
@@ -301,7 +301,7 @@ const updateUserBook = async (req, res) => {
         response.bookStatus = data.bookStatus;
         response.added = data.added;
       }
-      response.countByYear = await getCountByYear(userId, boardType, language);
+      response.countByYear = await getCountByYearV2(userId, boardType, language);
       return res.send(response);
     } catch (err) {
       return res.status(500).send('Something went wrong');

@@ -68,9 +68,9 @@ router.get('/', getBooksValidator, async (req, res) => {
   } else {
     result = await Book.aggregate([
       { $unionWith: 'custombooks' },
-      { $match : { $and: [{ language }, !title ? { votesCount: { $gt: 100 } } : {}, (categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, exact && title ? { title: { $regex: `^${title}$`, $options: 'i' } } : title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
+      { $match : { $and: [{ language }, !title ? { votesCount: { $gt: 50 } } : {}, (categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, exact && title ? { title: { $regex: `^${title}$`, $options: 'i' } } : title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
       { $sort : { [sortType]: sortDirection } },
-      { $limit : 10000 },
+      { $limit : 5000 },
       { $facet: {
           items: [
             { $lookup: { 

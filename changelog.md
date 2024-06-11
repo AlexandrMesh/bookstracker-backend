@@ -2,6 +2,13 @@
 
 ## bookdesk
 
+## 1.4.21
+
+###### 2024-06-11
+
+- [Fix] Performance improvements for loading books
+- [Fix] Fix `countByYear` method
+
 ## 1.4.2
 
 ###### 2024-06-10
