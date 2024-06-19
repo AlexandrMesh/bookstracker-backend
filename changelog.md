@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.4.22
+
+###### 2024-06-19
+
+- [Fix] Fix `getCountByYearV2` endpoint to return month and year for Statistic
+
 ## 1.4.21
 
 ###### 2024-06-11

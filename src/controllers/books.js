@@ -59,13 +59,15 @@ const getCountByYearV2 = async (userId, boardType, language) => {
     ], { allowDiskUse : true });
     const booksCountByYear = map(
       groupBy(
-        userBooks[0]?.items.map((item) => ({ ...item, monthAndYear: new Date(item?.added)?.toLocaleString(language, { month: 'long', year: 'numeric' }) })),
+        userBooks[0]?.items.map((item) => ({ ...item, month: new Date(item?.added).getMonth() + 1, year: new Date(item?.added).getFullYear(), monthAndYear: new Date(item?.added)?.toLocaleString(language, { month: 'long', year: 'numeric' }) })),
         'monthAndYear',
       ),
       (value, key) => {
         return {
           monthAndYear: key,
           count: value.length,
+          month:  value[0]?.month,
+          year: value[0]?.year
         };
       },
     );
