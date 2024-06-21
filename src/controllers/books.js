@@ -77,6 +77,45 @@ const getCountByYearV2 = async (userId, boardType, language) => {
   }
 }
 
+const getUsersCompletedBooksCount = async (req, res) => {
+  const { limit, boardType, language } = req.query;
+
+  const userId = res.locals.userId;
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const result = await UserBook.aggregate([
+        { $match : { bookStatus: boardType } },
+        { $facet: {
+          items: [
+            { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
+            { $lookup: { from: 'custombooks', localField: 'bookId', foreignField: '_id', as: 'customBookDetails' } },
+            { $project: { customBookDetails: { language: 1 }, bookDetails: { language: 1 }, userId: 1 } },
+            { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
+            { $project: { bookDetails: 0, customBookDetails: 0 } },
+            { $match : { language } }
+          ]
+        }},
+        { $unwind: '$items' },
+        { $group: {
+          _id: '$items.userId',
+          count: { $count: { } }
+        }},
+        { $sort : { count: -1 } },
+        { $limit: Number(limit) }
+      ], { allowDiskUse : true });
+      console.log(result, 'result');
+      return res.send({ data: result, currentUserPlace: result.findIndex(({ _id }) => _id.toString() === userId ) + 1 });
+    } catch (error) {
+      console.log(error, 'error');
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
 const getBooksCountByYear = async (req, res) => {
   const { boardType, language } = req.query;
 
@@ -409,4 +448,4 @@ const deleteUserComment = async (req, res) => {
   }
 };
 
-module.exports = { getBooksCountByYear, getBook, updateUserBook, getBooksCountByYearV2, updateUserBookRating, deleteUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue };
+module.exports = { getBooksCountByYear, getBook, updateUserBook, getBooksCountByYearV2, updateUserBookRating, getUsersCompletedBooksCount, deleteUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue };

@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.5.0
+
+###### 2024-06-21
+
+- [New] Added top readers rating stat
+
 ## 1.4.22
 
 ###### 2024-06-19

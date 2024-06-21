@@ -28,6 +28,11 @@ const getBooksCountByYearValidator = [
   query('boardType', 'Must be one of value: all, planned, inProgress, completed').isIn(['all', 'planned', 'inProgress', 'completed'])
 ];
 
+const getUsersCompletedBooksCountValidator = [
+  query('limit', 'Min length: 10, Max length: 100').isInt({ min: 10, max: 100 }),
+  query('boardType', 'Must be one of value: all, planned, inProgress, completed').isIn(['all', 'planned', 'inProgress', 'completed'])
+];
+
 const addCustomBookValidator = [
   body(['title', 'authorsList.*', 'categoryPath', 'coverPath', 'authorsList', 'annotation', 'pages', 'status', 'language'], 'Must be non-empty').notEmpty(),
   body(['title', 'authorsList.*', 'categoryPath', 'coverPath', 'annotation', 'status', 'language'], 'Must be a String').trim().isString(),
@@ -106,4 +111,4 @@ const getBooksValidator = [
   query('categoryPaths', 'Must be an array').optional().isArray(),
 ];
 
-module.exports = { getBooksCountByYearValidator, deleteUserCommentValidator, deleteUserBookRatingValidator, updateUserBookRatingValidator, getUserBookRatingValidator, getUserBookCommentValidator, getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserCommentValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };
+module.exports = { getBooksCountByYearValidator, deleteUserCommentValidator, getUsersCompletedBooksCountValidator, deleteUserBookRatingValidator, updateUserBookRatingValidator, getUserBookRatingValidator, getUserBookCommentValidator, getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserCommentValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };
