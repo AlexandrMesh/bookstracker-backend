@@ -2,7 +2,13 @@
 
 ## bookdesk
 
-## 1.5.1
+## 1.5.2
+
+###### 2024-07-04
+
+- [Fix] Fix for filter by categories
+
+## 1.5.2
 
 ###### 2024-07-04
 

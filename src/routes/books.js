@@ -68,9 +68,9 @@ router.get('/', getBooksValidator, async (req, res) => {
   } else {
     result = await Book.aggregate([
       { $unionWith: 'custombooks' },
-      { $match : { $and: [{ language }, !title ? { votesCount: { $gt: 100 } } : {}, (categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, exact && title ? { title: { $regex: `^${title}$`, $options: 'i' } } : title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
-      ...(title ? [{ $sort : { [sortType]: sortDirection } }] : []),
-      ...(!title ? [{ $sample: { size: 3000 } }] : [{ $limit : 3000 }]),
+      { $match : { $and: [{ language }, title || (categoryPaths || []).length > 0 ? {} : { votesCount: { $gt: 100 } }, (categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, exact && title ? { title: { $regex: `^${title}$`, $options: 'i' } } : title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
+      ...(title || (categoryPaths || []).length > 0 ? [{ $sort : { [sortType]: sortDirection } }] : []),
+      ...(title || (categoryPaths || []).length > 0 ? [{ $limit : 5000 }] : [{ $sample: { size: 3000 } }]),
       { $facet: {
           items: [
             { $lookup: { 
