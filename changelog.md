@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.5.1
+
+###### 2024-07-04
+
+- [New] Added random recommended books to display in the Recommended board
+
 ## 1.5.0
 
 ###### 2024-06-21
