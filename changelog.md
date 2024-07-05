@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.5.3
+
+###### 2024-07-05
+
+- [New] Added validator for the `updateUserComment` endpoint
+
 ## 1.5.2
 
 ###### 2024-07-04

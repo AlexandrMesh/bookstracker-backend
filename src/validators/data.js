@@ -64,6 +64,7 @@ const updateUserBookValidator = [
 
 const updateUserCommentValidator = [
   body('comment', 'Must not contain: @^&/#+$~%;~`*<>=%[]{}_|').custom(value => !(/[@^&/\\#+$~%;~`*<>=%[\]{}_|]/g.test(value))),
+  body('comment', 'Min length: 5, Max length: 10000').isLength({ min: 5, max: 10000 }),
   body('bookId', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
   body('added', 'Must be an Unix time').isNumeric()
 ];
