@@ -451,7 +451,8 @@ const deleteUserBookRating = async (req, res) => {
   if (result.isEmpty()) {
     try {
       await UserBookRating.deleteOne({ bookId, userId });
-      return res.send({ status: 'ok' });
+      const response = await UserBookRating.find({ userId }).select({ bookId: 1, rating: 1, added: 1 });
+      return res.send(response);
     } catch (err) {
       return res.status(500).send('Something went wrong');
     }
