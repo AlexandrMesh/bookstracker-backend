@@ -11,6 +11,7 @@ const User = mongoose.model('User');
 const UserVote = mongoose.model('UserVote');
 const App = mongoose.model('App');
 const UserGoal = mongoose.model('UserGoal');
+const UserBookRating = mongoose.model('UserBookRating');
 
 const checkAuth = async (req, res) => {
   const { token } = req.query;
@@ -26,14 +27,16 @@ const checkAuth = async (req, res) => {
           App.find({}).select({ version: 1, googlePlayUrl: 1 }),
           User.findOneAndUpdate({ _id: userId }, { lastLoggedIn }),
           UserVote.find({ userId }).select({ bookId: 1, count: 1 }),
-          UserGoal.find({ userId }).select({ numberOfPages: 1 })
+          UserGoal.find({ userId }).select({ numberOfPages: 1 }),
+          UserBookRating.find({ userId }).select({ bookId: 1, rating: 1 })
         ]);
         const { version, googlePlayUrl } = result[0][0] || {};
         const { _id, email, registered, updated } = result[1] || {};
         const userVotes = result[2] || 0;
         const { numberOfPages } = result[3][0] || 0;
+        const userBookRatings = result[4] || 0;
 
-        res.send({ profile: { _id, email, registered, updated }, version, googlePlayUrl, userVotes, numberOfPagesForGoal: numberOfPages });
+        res.send({ profile: { _id, email, registered, updated }, version, googlePlayUrl, userVotes, userBookRatings, numberOfPagesForGoal: numberOfPages });
       } catch (err) {
         return res.status(500).send({
           fieldName: 'other',
@@ -128,9 +131,10 @@ const signIn = async (req, res) => {
       const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
       const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
       const userGoal = await UserGoal.find({ userId }).select({ numberOfPages: 1 });
+      const bookRatings = UserBookRating.find({ userId }).select({ bookId: 1, rating: 1 });
       const { version, googlePlayUrl } = appInfo[0] || {};
       const { numberOfPages } = userGoal[0] || {};
-      return res.send({ token, profile, version, googlePlayUrl, userVotes, numberOfPagesForGoal: numberOfPages });
+      return res.send({ token, profile, version, googlePlayUrl, userVotes, bookRatings, numberOfPagesForGoal: numberOfPages });
     } catch (e) {
       return res.status(500).send({
         fieldName: 'other',
@@ -175,6 +179,7 @@ const signIn = async (req, res) => {
     }
     await user.comparePassword(password);
     const userVotes = await UserVote.find({ userId: user._id }).select({ bookId: 1, count: 1 });
+    const bookRatings = UserBookRating.find({ userId: user._id }).select({ bookId: 1, rating: 1 });
     const token = jwt.sign({ userId: user._id }, 'I_LIKE_READING_BOOKS_209');
     profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated };
     const currentDate = new Date();
@@ -184,7 +189,7 @@ const signIn = async (req, res) => {
     const userGoal = await UserGoal.find({ userId: user._id }).select({ numberOfPages: 1 });
     const { version, googlePlayUrl } = appInfo[0] || {};
     const { numberOfPages } = userGoal[0] || {};
-    return res.send({ token, profile, userVotes, version, googlePlayUrl, numberOfPagesForGoal: numberOfPages });
+    return res.send({ token, profile, userVotes, bookRatings, version, googlePlayUrl, numberOfPagesForGoal: numberOfPages });
   } catch (err) {
     console.log(err, 'err');
     return res.status(500).send({

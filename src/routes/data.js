@@ -1,5 +1,5 @@
 const express = require('express');
-const { getBook, updateUserBook, getUsersCompletedBooksCount, getUserBookComment, deleteUserComment, getBooksCountByYearV2, deleteUserBookRating, updateUserBookRating, getUserBookRating, updateBookVotes, updateUserBookAddedValue, updateUserComment, getBooksCountByYear } = require('../controllers/books');
+const { getBook, updateUserBook, getUsersCompletedBooksCount, getUserBookComment, deleteUserComment, updateUserBookRatingV2, getBooksCountByYearV2, deleteUserBookRating, updateUserBookRating, getUserBookRating, updateBookVotes, updateUserBookAddedValue, updateUserComment, getBooksCountByYear } = require('../controllers/books');
 const { getCoversList, addCustomBook } = require('../controllers/customBooks');
 const { getBooksCountByYearValidator, getUserBookRatingValidator, getUsersCompletedBooksCountValidator, updateUserBookRatingValidator, deleteUserBookRatingValidator, deleteUserCommentValidator, getUserBookCommentValidator, getBookValidator, updateUserCommentValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserBookAddedValueValidator, updateBookVotesValidator } = require('../validators/data');
 
@@ -18,6 +18,7 @@ router.post('/updateBookVotes', updateBookVotesValidator, updateBookVotes);
 router.post('/updateUserBookAddedValue', updateUserBookAddedValueValidator, updateUserBookAddedValue);
 router.post('/updateUserComment', updateUserCommentValidator, updateUserComment);
 router.post('/updateUserBookRating', updateUserBookRatingValidator, updateUserBookRating);
+router.post('/updateUserBookRatingV2', updateUserBookRatingValidator, updateUserBookRatingV2);
 router.post('/deleteUserBookRating', deleteUserBookRatingValidator, deleteUserBookRating);
 router.post('/deleteUserComment', deleteUserCommentValidator, deleteUserComment);
 

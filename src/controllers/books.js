@@ -404,6 +404,40 @@ const updateUserBookRating = async (req, res) => {
   }
 };
 
+const updateUserBookRatingV2 = async (req, res) => {
+  const { bookId, added, rating } = req.body;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      if (rating === 0) {
+        await UserBookRating.deleteOne({ bookId, userId });
+        const response = await UserBookRating.find({ userId }).select({ bookId: 1, rating: 1, added: 1 });
+        return res.send(response);
+      } else {
+        await UserBookRating.updateOne(
+          { userId, bookId },
+          { rating, added },
+          { upsert: true, new: true }
+        );
+        const response = await UserBookRating.find({ userId }).select({ bookId: 1, rating: 1, added: 1 });
+        return res.send(response);
+      }
+    } catch (err) {
+      console.log(err, 'err');
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
 const deleteUserBookRating = async (req, res) => {
   const { bookId } = req.body;
   
@@ -448,4 +482,4 @@ const deleteUserComment = async (req, res) => {
   }
 };
 
-module.exports = { getBooksCountByYear, getBook, updateUserBook, getBooksCountByYearV2, updateUserBookRating, getUsersCompletedBooksCount, deleteUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue };
+module.exports = { getBooksCountByYear, getBook, updateUserBook, getBooksCountByYearV2, updateUserBookRatingV2, updateUserBookRating, getUsersCompletedBooksCount, deleteUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue };

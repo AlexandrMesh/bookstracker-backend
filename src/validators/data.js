@@ -70,7 +70,7 @@ const updateUserCommentValidator = [
 ];
 
 const updateUserBookRatingValidator = [
-  body('rating', 'Must be a Number').isNumeric(),
+  body('rating', 'Must be a Number').isNumeric().isIn([0, 1, 2, 3, 4, 5]),
   body('bookId', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
   body('added', 'Must be an Unix time').isNumeric()
 ];

@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.6.0
+
+###### 2024-07-05
+
+- [New] Added V2 endpoint for `updateUserRating`
+
 ## 1.5.3
 
 ###### 2024-07-05
