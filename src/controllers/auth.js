@@ -131,10 +131,10 @@ const signIn = async (req, res) => {
       const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
       const appInfo = await App.find({}).select({ version: 1, googlePlayUrl: 1 });
       const userGoal = await UserGoal.find({ userId }).select({ numberOfPages: 1 });
-      const bookRatings = UserBookRating.find({ userId }).select({ bookId: 1, rating: 1 });
+      const userBookRatings = await UserBookRating.find({ userId }).select({ bookId: 1, rating: 1 });
       const { version, googlePlayUrl } = appInfo[0] || {};
       const { numberOfPages } = userGoal[0] || {};
-      return res.send({ token, profile, version, googlePlayUrl, userVotes, bookRatings, numberOfPagesForGoal: numberOfPages });
+      return res.send({ token, profile, version, googlePlayUrl, userVotes, userBookRatings, numberOfPagesForGoal: numberOfPages });
     } catch (e) {
       return res.status(500).send({
         fieldName: 'other',
@@ -179,7 +179,7 @@ const signIn = async (req, res) => {
     }
     await user.comparePassword(password);
     const userVotes = await UserVote.find({ userId: user._id }).select({ bookId: 1, count: 1 });
-    const bookRatings = UserBookRating.find({ userId: user._id }).select({ bookId: 1, rating: 1 });
+    const userBookRatings = await UserBookRating.find({ userId: user._id }).select({ bookId: 1, rating: 1 });
     const token = jwt.sign({ userId: user._id }, 'I_LIKE_READING_BOOKS_209');
     profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated };
     const currentDate = new Date();
@@ -189,7 +189,7 @@ const signIn = async (req, res) => {
     const userGoal = await UserGoal.find({ userId: user._id }).select({ numberOfPages: 1 });
     const { version, googlePlayUrl } = appInfo[0] || {};
     const { numberOfPages } = userGoal[0] || {};
-    return res.send({ token, profile, userVotes, bookRatings, version, googlePlayUrl, numberOfPagesForGoal: numberOfPages });
+    return res.send({ token, profile, userVotes, userBookRatings, version, googlePlayUrl, numberOfPagesForGoal: numberOfPages });
   } catch (err) {
     console.log(err, 'err');
     return res.status(500).send({
