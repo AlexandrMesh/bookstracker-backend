@@ -49,7 +49,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(auth);
-app.use(appInfo);
+app.use(requireAuth, appInfo);
 app.use(requireAuth, data);
 app.use('/', index);
 app.use('/books', requireAuth, books);

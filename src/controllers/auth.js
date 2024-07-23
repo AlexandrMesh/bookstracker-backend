@@ -31,12 +31,12 @@ const checkAuth = async (req, res) => {
           UserBookRating.find({ userId }).select({ bookId: 1, rating: 1 })
         ]);
         const { version, googlePlayUrl } = result[0][0] || {};
-        const { _id, email, registered, updated } = result[1] || {};
+        const { _id, email, registered, updated, supportApp } = result[1] || {};
         const userVotes = result[2] || 0;
         const { numberOfPages } = result[3][0] || 0;
         const userBookRatings = result[4] || 0;
 
-        res.send({ profile: { _id, email, registered, updated }, version, googlePlayUrl, userVotes, userBookRatings, numberOfPagesForGoal: numberOfPages });
+        res.send({ profile: { _id, email, registered, updated, supportApp }, version, googlePlayUrl, userVotes, userBookRatings, numberOfPagesForGoal: numberOfPages });
       } catch (err) {
         return res.status(500).send({
           fieldName: 'other',
@@ -123,7 +123,7 @@ const signIn = async (req, res) => {
         profile = { _id: newUser._id, email: newUser.email, registered: newUser.registered }
       } else {
         userId = user._id;
-        profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated }
+        profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated, supportApp: user.supportApp }
       }
       const token = jwt.sign({ userId }, 'I_LIKE_READING_BOOKS_209');
       const lastLoggedIn = currentDate.getTime();
@@ -181,7 +181,7 @@ const signIn = async (req, res) => {
     const userVotes = await UserVote.find({ userId: user._id }).select({ bookId: 1, count: 1 });
     const userBookRatings = await UserBookRating.find({ userId: user._id }).select({ bookId: 1, rating: 1 });
     const token = jwt.sign({ userId: user._id }, 'I_LIKE_READING_BOOKS_209');
-    profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated };
+    profile = { _id: user._id, email: user.email, registered: user.registered, updated: user.updated, supportApp: user.supportApp };
     const currentDate = new Date();
     const lastLoggedIn = currentDate.getTime();
     await User.findOneAndUpdate({ _id: user._id }, { lastLoggedIn });

@@ -20,7 +20,11 @@ const userSchema = new mongoose.Schema({
   },
   registered: Number,
   updated: Number,
-  lastLoggedIn: Number
+  lastLoggedIn: Number,
+  supportApp: {
+    confirmed: Boolean,
+    viewedAt: Number
+  }
 });
 
 userSchema.pre('save', function(next) {

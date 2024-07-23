@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.7.0
+
+###### 2024-07-23
+
+- [New] Added endpoint `supportApp`
+
 ## 1.6.0
 
 ###### 2024-07-05
