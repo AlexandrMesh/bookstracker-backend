@@ -105,7 +105,6 @@ const getUsersCompletedBooksCount = async (req, res) => {
         { $sort : { count: -1 } },
         { $limit: Number(limit) }
       ], { allowDiskUse : true });
-      console.log(result, 'result');
       return res.send({ data: result, currentUserPlace: result.findIndex(({ _id }) => _id.toString() === userId ) + 1 });
     } catch (error) {
       console.log(error, 'error');
@@ -281,7 +280,6 @@ const updateBookVotes = async (req, res) => {
       const userVotes = await UserVote.find({ userId }).select({ bookId: 1, count: 1 });
       return res.send({ votesCount: updatedBook?.votesCount || 0, userVotes });
     } catch (err) {
-      console.log(err, 'err');
       return res.status(500).send('Something went wrong');
     }
   } else {
@@ -430,7 +428,6 @@ const updateUserBookRatingV2 = async (req, res) => {
         return res.send(response);
       }
     } catch (err) {
-      console.log(err, 'err');
       return res.status(500).send('Something went wrong');
     }
   } else {

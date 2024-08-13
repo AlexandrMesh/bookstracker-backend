@@ -53,7 +53,7 @@ const supportApp = async (req, res) => {
         confirmed,
         viewedAt,
       };
-      const result = await User.findOneAndUpdate({ _id: userId }, { supportApp });
+      const result = await User.findOneAndUpdate({ _id: userId }, { supportApp }, { new: true }).select({ supportApp: 1 });
       res.send(result);
     } catch (err) {
       return res.status(500).send({
