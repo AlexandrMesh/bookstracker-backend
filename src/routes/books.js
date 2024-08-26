@@ -68,9 +68,9 @@ router.get('/', getBooksValidator, async (req, res) => {
   } else {
     result = await Book.aggregate([
       { $unionWith: 'custombooks' },
-      { $match : { $and: [{ language }, title || (categoryPaths || []).length > 0 ? {} : { votesCount: { $gt: 100 } }, (categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, exact && title ? { title: { $regex: `^${title}$`, $options: 'i' } } : title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
+      { $match : { $and: [{ language }, title || (categoryPaths || []).length > 0 ? {} : { votesCount: { $gt: 50 } }, (categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, exact && title ? { title: { $regex: `^${title}$`, $options: 'i' } } : title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
       ...(title || (categoryPaths || []).length > 0 ? [{ $sort : { [sortType]: sortDirection } }] : []),
-      ...(title || (categoryPaths || []).length > 0 ? [{ $limit : 5000 }] : [{ $sample: { size: 3000 } }]),
+      ...(title || (categoryPaths || []).length > 0 ? [{ $limit: 1000 }] : [{ $sample: { size: 50 } }]),
       { $facet: {
           items: [
             { $lookup: { 
@@ -93,13 +93,13 @@ router.get('/', getBooksValidator, async (req, res) => {
             { $project: { bookDetails: { added: 1, bookStatus: 1}, _id: 0, title: 1, authorsList: 1, bookId: '$_id', categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1 } },
             { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
             { $project: { bookDetails: 0 } },
-            
-            { $skip : skip },
+            { $skip : title || (categoryPaths || []).length > 0 ? skip : 0 },
             { $limit : limit },
           ],
           pagination: [
             { $unionWith: 'custombooks' },
             { $match : { $and: [{ language }, (categoryPaths || []).length > 0 ? { categoryPath: { $in: categoryPaths } } : {}, exact && title ? { title: { $regex: `^${title}$`, $options: 'i' } } : title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {} ] } },
+            { $limit : 1000 },
             { $count: "totalItems" },
             {
               $project: {

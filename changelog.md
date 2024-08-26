@@ -2,6 +2,13 @@
 
 ## bookdesk
 
+## 1.8.0
+
+###### 2024-08-26
+
+- [Fix] New logic for loading the recommended books (only 50 results to be loaded)
+- [New] Added `UserComment` to return for `signIn` and `checkAuth` endpoints
+
 ## 1.7.1
 
 ###### 2024-08-13
