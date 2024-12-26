@@ -44,15 +44,7 @@ const addCustomBookValidator = [
   body('authorsList.*', 'Min length: 6, Max length: 64').isLength({ min: 6, max: 64 }),
   body('categoryPath', 'Min length: 5, Max length: 10').isLength({ min: 5, max: 10 }),
   body('annotation', 'Min length: 100, Max length: 1000').isLength({ min: 100, max: 1000 }),
-  body('pages', 'Min length: 2, Max length: 5').isLength({ min: 2, max: 5 }).isNumeric().withMessage('Must be a Number'),
-  body('title').custom(async (value, { req }) => {
-    const bookExists = await Book.findOne({ title: value, language: req.body.language }).collation( { locale: req.body.language, strength: 2 } );
-    const customBookExists = await CustomBook.findOne({ title: value, language: req.body.language }).collation( { locale: req.body.language, strength: 2 } );
-  
-    if (bookExists || customBookExists) {
-      return Promise.reject('Book exists');
-    }
-  }),
+  body('pages', 'Min length: 2, Max length: 5').isLength({ min: 2, max: 5 }).isNumeric().withMessage('Must be a Number')
 ];
 
 const updateUserBookValidator = [

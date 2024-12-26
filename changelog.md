@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.8.10
+
+###### 2024-08-26
+
+- [Fix] Removed the validator for checking existing books for addCustomBook endpoint
+
 ## 1.8.0
 
 ###### 2024-08-26
