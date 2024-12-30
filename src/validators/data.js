@@ -104,4 +104,9 @@ const getBooksValidator = [
   query('categoryPaths', 'Must be an array').optional().isArray(),
 ];
 
-module.exports = { getBooksCountByYearValidator, deleteUserCommentValidator, getUsersCompletedBooksCountValidator, deleteUserBookRatingValidator, updateUserBookRatingValidator, getUserBookRatingValidator, getUserBookCommentValidator, getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserCommentValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };
+const getSimilarBooksValidator = [
+  query('bookId', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
+  query('categoryPath', 'Must be a String').trim().isString()
+];
+
+module.exports = { getBooksCountByYearValidator, deleteUserCommentValidator, getSimilarBooksValidator, getUsersCompletedBooksCountValidator, deleteUserBookRatingValidator, updateUserBookRatingValidator, getUserBookRatingValidator, getUserBookCommentValidator, getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserCommentValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };

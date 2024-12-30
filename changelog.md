@@ -2,9 +2,15 @@
 
 ## bookdesk
 
+## 1.9.0
+
+###### 2024-12-30
+
+- [New] Added `getSimilarBooks` endpoint
+
 ## 1.8.10
 
-###### 2024-08-26
+###### 2024-12-26
 
 - [Fix] Removed the validator for checking existing books for addCustomBook endpoint
 

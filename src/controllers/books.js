@@ -480,4 +480,31 @@ const deleteUserComment = async (req, res) => {
   }
 };
 
-module.exports = { getBooksCountByYear, getBook, updateUserBook, getBooksCountByYearV2, updateUserBookRatingV2, updateUserBookRating, getUsersCompletedBooksCount, deleteUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue };
+const getSimilarBooks = async (req, res) => {
+  const { bookId, categoryPath, language } = req.query;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const response = await Book.aggregate([
+        { $match: { language, votesCount: { $gt: 50 }, categoryPath, _id: { $ne: new mongoose.Types.ObjectId(bookId) }} },
+        { $limit: 1000 },
+        { $sample: { size: 3 } },
+        { $project: { coverPath: 1, title: 1 } }
+    ], { allowDiskUse : true });
+      return res.send(response);
+    } catch (err) {
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
+module.exports = { getBooksCountByYear, getBook, updateUserBook, getBooksCountByYearV2, updateUserBookRatingV2, updateUserBookRating, getUsersCompletedBooksCount, deleteUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue, getSimilarBooks };
