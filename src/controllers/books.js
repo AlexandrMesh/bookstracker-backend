@@ -71,6 +71,41 @@ const getCountByYearV2 = async (userId, boardType, language) => {
         };
       },
     );
+    return booksCountByYear;
+  } catch (err) {
+    return 'Something went wrong';
+  }
+}
+
+const getCountByYearV3 = async (userId, boardType, language) => {
+  try {
+    const userBooks = await UserBook.aggregate([
+      { $match : { userId: new mongoose.Types.ObjectId(userId), bookStatus: boardType } },
+      { $facet: {
+        items: [
+          { $lookup: { from: 'books', localField: 'bookId', foreignField: '_id', as: 'bookDetails' } },
+          { $lookup: { from: 'custombooks', localField: 'bookId', foreignField: '_id', as: 'customBookDetails' } },
+          { $project: { customBookDetails: { language: 1 }, bookDetails: { language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
+          { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
+          { $project: { bookDetails: 0, customBookDetails: 0 } },
+          { $match : { language } }
+        ]
+      }}
+    ], { allowDiskUse : true });
+    const booksCountByYear = map(
+      groupBy(
+        userBooks[0]?.items.map((item) => ({ ...item, month: new Date(item?.added).getMonth() + 1, year: new Date(item?.added).getFullYear(), monthAndYear: new Date(item?.added)?.toLocaleString(language, { month: 'long', year: 'numeric' }) })),
+        'monthAndYear',
+      ),
+      (value, key) => {
+        return {
+          monthAndYear: key,
+          count: value.length,
+          month:  value[0]?.month,
+          year: value[0]?.year
+        };
+      },
+    );
     const monthInMiliseconds = 86400000 * 30;
     const yearInMiliseconds = 86400000 * 365;
     const currentDate = new Date();
@@ -153,6 +188,24 @@ const getBooksCountByYearV2 = async (req, res) => {
   if (result.isEmpty()) {
     try {
       const result = await getCountByYearV2(userId, boardType, language);
+      return res.send(result);
+    } catch (error) {
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
+const getBooksCountByYearV3 = async (req, res) => {
+  const { boardType, language } = req.query;
+
+  const userId = res.locals.userId;
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const result = await getCountByYearV3(userId, boardType, language);
       return res.send(result);
     } catch (error) {
       return res.status(500).send('Something went wrong');
@@ -518,4 +571,4 @@ const getSimilarBooks = async (req, res) => {
   }
 };
 
-module.exports = { getBooksCountByYear, getBook, updateUserBook, getBooksCountByYearV2, updateUserBookRatingV2, updateUserBookRating, getUsersCompletedBooksCount, deleteUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue, getSimilarBooks };
+module.exports = { getBooksCountByYear, getBook, updateUserBook, getBooksCountByYearV2, getBooksCountByYearV3, updateUserBookRatingV2, updateUserBookRating, getUsersCompletedBooksCount, deleteUserBookRating, deleteUserComment, getUserBookComment, getUserBookRating, updateUserComment, updateBookVotes, updateUserBookAddedValue, getSimilarBooks };
