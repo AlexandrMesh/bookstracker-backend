@@ -16,7 +16,11 @@ const updateUserGoalValidator = [
 ];
 
 const deleteUserGoalItemValidator = [
-  body('id', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
+  // body('id', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
 ];
 
-module.exports = { getUserGoalItemsValidator, deleteUserGoalItemValidator ,addUserGoalItemValidator, addUserGoalValidator, updateUserGoalValidator };
+const getUserGoalItemsByYearValidator = [
+  query('language', 'Must be one of value: ru, en').isIn(['ru', 'en']),
+];
+
+module.exports = { getUserGoalItemsValidator, getUserGoalItemsByYearValidator, deleteUserGoalItemValidator ,addUserGoalItemValidator, addUserGoalValidator, updateUserGoalValidator };

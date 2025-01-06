@@ -71,7 +71,18 @@ const getCountByYearV2 = async (userId, boardType, language) => {
         };
       },
     );
-    return booksCountByYear;
+    const monthInMiliseconds = 86400000 * 30;
+    const yearInMiliseconds = 86400000 * 365;
+    const currentDate = new Date();
+    const addedTime = currentDate.getTime();
+    const booksReadPerMonth = userBooks[0]?.items.filter(({ added }) => added >= addedTime - monthInMiliseconds).length || 0;
+    const booksReadPerYear = userBooks[0]?.items.filter(({ added }) => added >= addedTime - yearInMiliseconds).length || 0;
+    const response = {
+      items: booksCountByYear,
+      booksReadPerMonth,
+      booksReadPerYear
+    };
+    return response;
   } catch (err) {
     return 'Something went wrong';
   }

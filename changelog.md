@@ -2,6 +2,13 @@
 
 ## bookdesk
 
+## 1.10.0
+
+###### 2025-01-06
+
+- [Fix] Added limits (300 items) for getting user goal items
+- [Fix] Reworked endpoints for getting read books and read pages for statistic
+
 ## 1.9.0
 
 ###### 2024-12-30
