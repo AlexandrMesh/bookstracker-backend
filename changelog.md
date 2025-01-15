@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.11.0
+
+###### 2025-01-15
+
+- [New] Added GET `customBooks` and POST `updateCustomBook` endpoints
+
 ## 1.10.0
 
 ###### 2025-01-06

@@ -1,7 +1,7 @@
 const express = require('express');
 const { getBook, updateUserBook, getUsersCompletedBooksCount, getSimilarBooks, getBooksCountByYearV3, getUserBookComment, deleteUserComment, updateUserBookRatingV2, getBooksCountByYearV2, deleteUserBookRating, updateUserBookRating, getUserBookRating, updateBookVotes, updateUserBookAddedValue, updateUserComment, getBooksCountByYear } = require('../controllers/books');
-const { getCoversList, addCustomBook } = require('../controllers/customBooks');
-const { getBooksCountByYearValidator, getUserBookRatingValidator, getSimilarBooksValidator, getUsersCompletedBooksCountValidator, updateUserBookRatingValidator, deleteUserBookRatingValidator, deleteUserCommentValidator, getUserBookCommentValidator, getBookValidator, updateUserCommentValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserBookAddedValueValidator, updateBookVotesValidator } = require('../validators/data');
+const { getCoversList, addCustomBook, getCustomBooks, updateCustomBook } = require('../controllers/customBooks');
+const { getBooksCountByYearValidator, getUserBookRatingValidator, updateCustomBookValidator, getCustomBooksValidator, getSimilarBooksValidator, getUsersCompletedBooksCountValidator, updateUserBookRatingValidator, deleteUserBookRatingValidator, deleteUserCommentValidator, getUserBookCommentValidator, getBookValidator, updateUserCommentValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserBookAddedValueValidator, updateBookVotesValidator } = require('../validators/data');
 
 const router = express.Router();
 
@@ -14,6 +14,8 @@ router.get('/booksCountByYearV2', getBooksCountByYearValidator, getBooksCountByY
 router.get('/booksCountByYearV3', getBooksCountByYearValidator, getBooksCountByYearV3);
 router.get('/usersCompletedBooksCount', getUsersCompletedBooksCountValidator, getUsersCompletedBooksCount);
 router.get('/similarBooks', getSimilarBooksValidator, getSimilarBooks);
+router.get('/customBooks', getCustomBooksValidator, getCustomBooks);
+router.post('/updateCustomBook', updateCustomBookValidator, updateCustomBook);
 router.post('/addCustomBook', addCustomBookValidator, addCustomBook);
 router.post('/updateUserBook', updateUserBookValidator, updateUserBook);
 router.post('/updateBookVotes', updateBookVotesValidator, updateBookVotes);

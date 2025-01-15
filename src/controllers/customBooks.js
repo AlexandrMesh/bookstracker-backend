@@ -123,4 +123,99 @@ const addCustomBook = async (req, res) => {
   }
 };
 
-module.exports = { getCoversList, addCustomBook };
+const updateCustomBook = async (req, res) => {
+  const { bookId, language, pages, title, authorsList, annotation } = req.body;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const data = await CustomBook.findOneAndUpdate(
+        { userId, _id: bookId, language },
+        { pages, title, authorsList, annotation },
+        { new: true }
+      ).select({ title: 1, pages: 1, annotation: 1, authorsList: 1 });
+      return res.send(data);
+    } catch (err) {
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
+const getCustomBooks = async (req, res) => {
+  const { language, pageIndex, limit } = req.query;
+  
+  const userId = res.locals.userId;
+
+  if (!userId) {
+    return res.status(500).send('Must provide user id');
+  }
+
+  const _limit = Number(req.query.limit) || 1;
+  const skip = pageIndex * _limit;
+  const itemsCount = skip + _limit;
+
+  const result = validationResult(req);
+  if (result.isEmpty()) {
+    try {
+      const response = await CustomBook.aggregate([
+        { $match : { userId: new mongoose.Types.ObjectId(userId), language } },
+        { $sort : { added: -1 } },
+        { $facet: {
+          items: [
+            { $lookup: { 
+              from: 'userbooks', 
+              let: { bookId: "$_id" },
+              pipeline: [
+                { $match:
+                  { $expr:
+                      { $and:
+                        [
+                          { $eq: [ "$bookId", "$$bookId" ] },
+                          { $eq: [ "$userId", new mongoose.Types.ObjectId(userId) ] }
+                        ]
+                      }
+                  }
+                },
+              ],
+              as: 'bookDetails' }
+            },
+            { $project: { bookDetails: { added: 1, bookStatus: 1}, _id: 0, title: 1, annotation: 1, authorsList: 1, bookId: '$_id', categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1 } },
+            { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, "$$ROOT" ] } } },
+            { $project: { bookDetails: 0 } },
+            { $skip : skip },
+            { $limit : _limit },
+          ],
+          pagination: [
+            { $match : { language } },
+            { $count: "totalItems" },
+            {
+              $project: {
+                hasNextPage: {
+                  $cond: { if: { $gt: [ '$totalItems', itemsCount ] }, then: true, else: false }
+                },
+                "totalItems": '$totalItems'
+              }
+            }
+          ]
+        }},
+        { $unwind: '$pagination' }
+      ], { allowDiskUse : true });
+      return res.send(response);
+    } catch (err) {
+      console.log(err.message);
+      return res.status(500).send('Something went wrong');
+    }
+  } else {
+    res.send({ errors: result.array({ onlyFirstError: true }) });
+  }
+};
+
+module.exports = { getCoversList, addCustomBook, getCustomBooks, updateCustomBook };

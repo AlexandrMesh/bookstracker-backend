@@ -47,6 +47,19 @@ const addCustomBookValidator = [
   body('pages', 'Min length: 2, Max length: 5').isLength({ min: 2, max: 5 }).isNumeric().withMessage('Must be a Number')
 ];
 
+const updateCustomBookValidator = [
+  body(['title', 'authorsList.*', 'authorsList', 'annotation', 'pages', 'bookId', 'language'], 'Must be non-empty').notEmpty(),
+  body('bookId', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
+  body(['title', 'authorsList.*', 'annotation', 'language'], 'Must be a String').trim().isString(),
+  body('language', 'Must be one of value: ru, en').isIn(['ru', 'en']),
+  body(['title', 'authorsList.*', 'annotation', 'pages'], 'Must not contain: @^&/#+$~%;~`*<>=%[]{}_|').custom(value => !(/[@^&/\\#+$~%;~`*<>=%[\]{}_|]/g.test(value))),
+  body('title', 'Min length: 3, Max length: 64').isLength({ min: 3, max: 64 }),
+  body('authorsList', 'Must contain min 1, max 3 authors').isArray({ min: 1, max: 3 }),
+  body('authorsList.*', 'Min length: 6, Max length: 64').isLength({ min: 6, max: 64 }),
+  body('annotation', 'Min length: 100, Max length: 1000').isLength({ min: 100, max: 1000 }),
+  body('pages', 'Min length: 2, Max length: 5').isLength({ min: 2, max: 5 }).isNumeric().withMessage('Must be a Number')
+];
+
 const updateUserBookValidator = [
   body(['bookId', 'bookStatus'], 'Must be non-empty').notEmpty(),
   body('bookId', 'Must be ObjectId').custom(value => ObjectId.isValid(value)),
@@ -109,4 +122,8 @@ const getSimilarBooksValidator = [
   query('categoryPath', 'Must be a String').trim().isString()
 ];
 
-module.exports = { getBooksCountByYearValidator, deleteUserCommentValidator, getSimilarBooksValidator, getUsersCompletedBooksCountValidator, deleteUserBookRatingValidator, updateUserBookRatingValidator, getUserBookRatingValidator, getUserBookCommentValidator, getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserCommentValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };
+const getCustomBooksValidator = [
+  query('language', 'Must be one of value: ru, en').isIn(['ru', 'en']),
+];
+
+module.exports = { getBooksCountByYearValidator, getCustomBooksValidator, updateCustomBookValidator, deleteUserCommentValidator, getSimilarBooksValidator, getUsersCompletedBooksCountValidator, deleteUserBookRatingValidator, updateUserBookRatingValidator, getUserBookRatingValidator, getUserBookCommentValidator, getBookValidator, getCoversListValidator, addCustomBookValidator, updateUserBookValidator, updateUserCommentValidator, updateBookVotesValidator, getBooksValidator, updateUserBookAddedValueValidator };
