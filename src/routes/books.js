@@ -41,7 +41,7 @@ router.get('/', getBooksValidator, async (req, res) => {
           { $project: { customBookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1, language: 1 }, bookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1, language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0, customBookDetails: 0 } },
-          { $match : { language } },
+          { $match : { $and: [{language }, title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {}] } },
           { $skip : skip },
           { $limit : limit }
         ],
@@ -51,7 +51,7 @@ router.get('/', getBooksValidator, async (req, res) => {
           { $project: { customBookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1, language: 1 }, bookDetails: { title: 1, authorsList: 1, categoryPath: 1, coverPath: 1, votesCount: 1, pages: 1, language: 1 }, bookId: 1, added: 1, bookStatus: 1 } },
           { $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$bookDetails", 0 ] }, { $arrayElemAt: [ "$customBookDetails", 0 ] }, "$$ROOT" ] } } },
           { $project: { bookDetails: 0, customBookDetails: 0 } },
-          { $match : { language } },
+          { $match : { $and: [{language }, title ? { $or: [ { title: { $regex: title, $options: 'i' }}, { authorsList: { $regex: title, $options: 'i' } } ] } : {}] } },
           { $count: "totalItems" },
           {
             $project: {

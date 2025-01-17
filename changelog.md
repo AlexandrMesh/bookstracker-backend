@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.11.1
+
+###### 2025-01-17
+
+- [Fix] Improvements to GET `bookList` endpoint to be able to get search results for all boards
+
 ## 1.11.0
 
 ###### 2025-01-15
