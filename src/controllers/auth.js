@@ -28,18 +28,18 @@ const checkAuth = async (req, res) => {
           App.find({}).select({ version: 1, googlePlayUrl: 1 }),
           User.findOneAndUpdate({ _id: userId }, { lastLoggedIn }),
           UserVote.find({ userId }).select({ bookId: 1, count: 1 }),
-          UserGoal.find({ userId }).select({ numberOfPages: 1 }),
+          UserGoal.find({ userId }).select({ numberOfPages: 1, type: 1 }),
           UserBookRating.find({ userId }).select({ bookId: 1, rating: 1 }),
           UserComment.find({ userId }).select({ bookId: 1, added: 1, comment: 1 })
         ]);
         const { version, googlePlayUrl } = result[0][0] || {};
         const { _id, email, registered, updated, supportApp } = result[1] || {};
         const userVotes = result[2] || 0;
-        const { numberOfPages } = result[3][0] || 0;
+        const { numberOfPages, type } = result[3][0] || 0;
         const userBookRatings = result[4] || 0;
         const userComments = result[5] || 0;
 
-        res.send({ profile: { _id, email, registered, updated, supportApp }, version, googlePlayUrl, userVotes, userBookRatings, numberOfPagesForGoal: numberOfPages, userComments });
+        res.send({ profile: { _id, email, registered, updated, supportApp }, version, googlePlayUrl, userVotes, userBookRatings, numberOfPagesForGoal: numberOfPages, goalType: type || 'daily', userComments });
       } catch (err) {
         return res.status(500).send({
           fieldName: 'other',
@@ -134,16 +134,16 @@ const signIn = async (req, res) => {
       const result = await Promise.all([
         App.find({}).select({ version: 1, googlePlayUrl: 1 }),
         UserVote.find({ userId }).select({ bookId: 1, count: 1 }),
-        UserGoal.find({ userId }).select({ numberOfPages: 1 }),
+        UserGoal.find({ userId }).select({ numberOfPages: 1, type: 1 }),
         UserBookRating.find({ userId }).select({ bookId: 1, rating: 1 }),
         UserComment.find({ userId }).select({ bookId: 1, added: 1, comment: 1 })
       ]);
       const { version, googlePlayUrl } = result[0][0] || {};
       const userVotes = result[1] || 0;
-      const { numberOfPages } = result[2][0] || 0;
+      const { numberOfPages, type } = result[2][0] || 0;
       const userBookRatings = result[3] || 0;
       const userComments = result[4] || 0;
-      return res.send({ token, profile, version, googlePlayUrl, userVotes, userBookRatings, numberOfPagesForGoal: numberOfPages, userComments });
+      return res.send({ token, profile, version, googlePlayUrl, userVotes, userBookRatings, numberOfPagesForGoal: numberOfPages, goalType: type || 'daily', userComments });
     } catch (e) {
       return res.status(500).send({
         fieldName: 'other',
@@ -195,17 +195,17 @@ const signIn = async (req, res) => {
     const result = await Promise.all([
       App.find({}).select({ version: 1, googlePlayUrl: 1 }),
       UserVote.find({ userId: user._id }).select({ bookId: 1, count: 1 }),
-      UserGoal.find({ userId: user._id }).select({ numberOfPages: 1 }),
+      UserGoal.find({ userId: user._id }).select({ numberOfPages: 1, type: 1 }),
       UserBookRating.find({ userId: user._id }).select({ bookId: 1, rating: 1 }),
       UserComment.find({ userId: user._id }).select({ bookId: 1, added: 1, comment: 1 })
     ]);
     const { version, googlePlayUrl } = result[0][0] || {};
     const userVotes = result[1] || 0;
-    const { numberOfPages } = result[2][0] || 0;
+    const { numberOfPages, type } = result[2][0] || 0;
     const userBookRatings = result[3] || 0;
     const userComments = result[4] || 0;
     const token = jwt.sign({ userId: user._id }, 'I_LIKE_READING_BOOKS_209');
-    return res.send({ token, profile, userVotes, userBookRatings, version, googlePlayUrl, numberOfPagesForGoal: numberOfPages, userComments });
+    return res.send({ token, profile, userVotes, userBookRatings, version, googlePlayUrl, numberOfPagesForGoal: numberOfPages, goalType: type || 'daily', userComments });
   } catch (err) {
     console.log(err, 'err');
     return res.status(500).send({

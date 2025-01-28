@@ -2,6 +2,12 @@
 
 ## bookdesk
 
+## 1.12.0
+
+###### 2025-01-28
+
+- [New] Added goal type for `addGoal` and `updateGoal` endpoints
+
 ## 1.11.1
 
 ###### 2025-01-17

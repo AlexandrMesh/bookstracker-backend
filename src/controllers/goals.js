@@ -131,7 +131,7 @@ const deleteUserGoalItem = async (req, res) => {
 };
 
 const addUserGoal = async (req, res) => {
-  const { numberOfPages } = req.body;
+  const { numberOfPages, type } = req.body;
 
   const userId = res.locals.userId;
 
@@ -140,7 +140,7 @@ const addUserGoal = async (req, res) => {
     try {
       const currentDate = new Date();
       const timestamp = currentDate.getTime();
-      await UserGoal.findOneAndUpdate({ userId }, { numberOfPages, added_at: timestamp }, { upsert: true }),
+      await UserGoal.findOneAndUpdate({ userId }, { numberOfPages, added_at: timestamp, type: type || 'daily' }, { upsert: true }),
       res.send({ status: 'ok' });
     } catch (err) {
       return res.status(500).send({
@@ -155,14 +155,14 @@ const addUserGoal = async (req, res) => {
 };
 
 const updateUserGoal = async (req, res) => {
-  const { numberOfPages } = req.body;
+  const { numberOfPages, type } = req.body;
 
   const userId = res.locals.userId;
 
   const result = validationResult(req);
   if (result.isEmpty()) {
     try {
-      await UserGoal.findOneAndUpdate({ userId }, { numberOfPages }),
+      await UserGoal.findOneAndUpdate({ userId }, { numberOfPages, type }),
       res.send({ status: 'ok' });
     } catch (err) {
       return res.status(500).send({
